@@ -1,0 +1,5 @@
+{
+  "inverted_index": "data/inverted_index.pickle",
+  "wikipedia_dump_small": "data/wikipedia_dump_small.xml",
+  "wikipedia_dump_full": "data/wikipedia_dump.xml"
+}
