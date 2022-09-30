@@ -1,34 +1,61 @@
-import os.path
 import pickle
+from typing import Optional
+
+from text_preprocessor import TextPreprocessor
+from vectorizer import TfIdfVectorizer
+from wiki_parser import WikiParser, WikiPage
+
+
+class IndexRecord:
+    def __init__(self, term):
+        self.term = term
+        self.count = 0
+        self.documents = set()
+
+    def add_document(self, document: WikiPage):
+        self.count += 1
+        self.documents.add(document)
 
 
 class InvertedIndex:
-    def __init__(self, paths):
-        self.inverted_index_path = paths.get('inverted_index')
-        self.wikipedia_data_path = paths.get('wikipedia_dump_small')
-        self._index = None
+    def __init__(self):
+        self.inverted_index_path: Optional[str] = None
+        self._index: dict[str, IndexRecord] = None
 
-    def is_loaded(self):
-        if self._index is None:
-            return False
-        return True
+    def load(self, inverted_index_path: str):
+        with open(inverted_index_path, 'rb') as inverted_index_file:
+            self._index = pickle.load(inverted_index_file)
+            self.inverted_index_path = inverted_index_path
 
-    def load(self):
-        if os.path.exists(self.inverted_index_path):
-            with open(self.inverted_index_path, 'rb') as inverted_index_file:
-                self._index = pickle.load(inverted_index_file)
-        else:
-            self.create()
-            self.save()
-
-    def save(self):
-        with open(self.inverted_index_path, 'wb') as inverted_index_file:
+    def save(self, inverted_index_path: str):
+        with open(inverted_index_path, 'wb') as inverted_index_file:
             pickle.dump(self._index, inverted_index_file)
 
-    def get(self, term):
-        if not self.is_loaded():
-            raise Exception('Inverted index is not loaded.')
-        return self._index.get(term)
+    def get(self, term: str) -> Optional[IndexRecord]:
+        if self._index is None:
+            raise Exception('Inverted index does not exist.')
+        indexrecord = self._index.get(term)
+        if not indexrecord:
+            raise Exception(f'Inverted index does not contain term {term}.')
+        return indexrecord
 
-    def create(self):
-        pass
+    def create(self, wikipedia_data_path: str, inverted_index_path: str, preprocessor_components: list[str]):
+        self._index = {}
+        wiki_parser = WikiParser()
+        with open(wikipedia_data_path, 'r') as wikipedia_data_file:
+            parsed_documents = wiki_parser.parse(wikipedia_data_file)
+
+        text_preprocessor = TextPreprocessor(preprocessor_components)
+        text_preprocessor.preprocess(parsed_documents)
+
+        tfidf_vectorizer = TfIdfVectorizer(len(parsed_documents), self)
+
+        for document in parsed_documents:
+            for term in document.terms:
+                if term not in self._index:
+                    self._index[term] = IndexRecord(term)
+                self._index[term].add_document(document)
+
+            document.tfidf_vector = tfidf_vectorizer.vectorize_document(document)
+
+        self.save(inverted_index_path)

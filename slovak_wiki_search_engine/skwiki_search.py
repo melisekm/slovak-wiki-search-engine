@@ -1,3 +1,4 @@
+import os
 import sys
 import utils
 from arg_parser import ArgParser
@@ -10,10 +11,16 @@ if __name__ == '__main__':
     arg_parser.validate_params()
     params = arg_parser.get_params()
 
-    paths = utils.get_paths('drive/paths.json')
+    conf = utils.get_conf('drive/conf.json')
+    inverted_index_path = conf.get('inverted_index_path')
+    wikipedia_path = conf.get('wikipedia_dump_small_path')
+    preprocessor_components = conf.get('preprocessor_components')
 
-    inverted_index = InvertedIndex(paths)
-    inverted_index.load()
+    inverted_index = InvertedIndex()
+    if os.path.exists(inverted_index_path):
+        inverted_index.load(inverted_index_path)
+    else:
+        inverted_index.create(wikipedia_path, inverted_index_path, preprocessor_components)
 
     search_engine = SearchEngine(inverted_index, params)
     results = search_engine.get_results()

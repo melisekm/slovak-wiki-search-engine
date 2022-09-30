@@ -1,0 +1,11 @@
+{
+  "inverted_index_path": "data/inverted_index.pickle",
+  "wikipedia_dump_small_path": "data/wikipedia_dump_small.xml",
+  "wikipedia_dump_full_path": "data/wikipedia_dump.xml",
+  "preprocessor_components": [
+    "normalize",
+    "tokenize",
+    "remove_stopwords",
+    "lemmatize"
+  ]
+}

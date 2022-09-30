@@ -1,6 +1,6 @@
 import unittest
 
-from arg_parser import ArgParser, QueryBooleanOperator
+from slovak_wiki_search_engine.arg_parser import ArgParser, QueryBooleanOperator
 
 
 def arg_parser_mock(input_params):
