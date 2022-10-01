@@ -1,14 +1,8 @@
 import unittest
 
-
 import utils
 from text_preprocessor import TextPreprocessor
 from wiki_parser import WikiParser
-
-
-def run(parsed_documents, preprocessor_components, conf, pbar_position):
-    text_preprocessor = TextPreprocessor(preprocessor_components, conf)
-    text_preprocessor.preprocess(parsed_documents, pbar_position=pbar_position)
 
 
 class TestParserPreprocess(unittest.TestCase):
@@ -22,15 +16,15 @@ class TestParserPreprocess(unittest.TestCase):
         conf = utils.DEFAULT_CONF
         preprocessor_components = conf['preprocessor_components']
 
-        # text_preprocessor = TextPreprocessor(preprocessor_components, conf)
-        # text_preprocessor.preprocess(parsed_documents)
-        utils.generic_parallel_execution(parsed_documents, run,
-                                         preprocessor_components, conf,
-                                         workers=workers, executor='process')
+        text_preprocessor = TextPreprocessor(preprocessor_components, conf)
+        text_preprocessor.preprocess(parsed_documents, workers)
 
-        # text_preprocessor.preprocess(parsed_documents)
+        main_page = next((page for page in parsed_documents if page.title == 'Hlavná stránka'), None)
+        self.assertIsNotNone(main_page)
+        self.assertEqual(main_page.doc_id, 0)
+        self.assertEqual(main_page.title, 'Hlavná stránka')
+        self.assertEqual(len(parsed_documents), 1213)
 
-        pass
 
 if __name__ == '__main__':
     unittest.main()

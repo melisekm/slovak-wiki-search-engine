@@ -26,7 +26,7 @@ class Infobox:
 
 
 class WikiPage:
-    def __init__(self, title: str, text: str, infobox: Optional[Infobox] = None, doc_id: Optional[int] = None):
+    def __init__(self, doc_id: int, title: str, text: str, infobox: Optional[Infobox] = None):
         self.doc_id = doc_id
         self.title = title
         self.raw_text = text
@@ -98,15 +98,16 @@ class WikiParser:
             return attr_grp.group(1)
         return ''
 
-    def parse_pages(self, pages, pbar_position=0) -> tuple[list[WikiPage], dict[Union[int, list, defaultdict]]]:
+    def parse_pages(self, pages: tuple[int, str], pbar_position=0) -> tuple[list[WikiPage],
+                                                                            dict[Union[int, list, defaultdict]]]:
         parsed_pages = []
         infobox_types = defaultdict(list)
-        for page in tqdm(pages, position=pbar_position):
+        for page, idx in tqdm(pages, desc=f"{pbar_position}", position=pbar_position):
             title = self._parse_attr(page, self.TITLE_PATTERN)
             text = self._parse_attr(page, self.TEXT_PATTERN)
             infobox = self.parse_infobox(text)
 
-            parsed_page = WikiPage(title, text, infobox)
+            parsed_page = WikiPage(idx, title, text, infobox)
             parsed_pages.append(parsed_page)
             if infobox:
                 infobox_types[infobox.name].append(parsed_page)
@@ -120,23 +121,20 @@ class WikiParser:
 
         return parsed_pages, stats
 
-    def get_pages(self, wikipedia_data_path: str) -> list[str]:
+    def get_pages(self, wikipedia_data_path: str) -> list[tuple[int, str]]:
         logger.info(f'Parsing pages from {wikipedia_data_path}')
         read_time = timer()
         with open(wikipedia_data_path, 'r', encoding='UTF-8') as wikipedia_data_file:
             wiki_data = wikipedia_data_file.read()
         pages = self.PAGE_PATTERN.findall(wiki_data)
         logger.info(f'Read {len(pages)} pages in {timer() - read_time:.2f}s')
-        return pages
+        return [(page, idx) for idx, page in enumerate(pages)]
 
     def parse_wiki(self, wikipedia_data_path: str, workers=4) -> list[WikiPage]:
         pages = self.get_pages(wikipedia_data_path)
         results = utils.generic_parallel_execution(pages, self.parse_pages, workers=workers, executor='process')
         merged_parsed_documents: list[WikiPage] = list(itertools.chain.from_iterable(x[0] for x in results))
-        for idx, doc in enumerate(merged_parsed_documents):
-            doc.doc_id = idx
         self.merge_stats(results)
-        # shuffle
         random.shuffle(merged_parsed_documents)
         return merged_parsed_documents
 

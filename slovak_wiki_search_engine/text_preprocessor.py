@@ -1,7 +1,7 @@
+import ast
 import logging
 import re
 from abc import ABC
-import ast
 
 import gensim
 import pandas as pd
@@ -75,7 +75,6 @@ class Tokenizer(PreprocessorComponent):
 class Lemmatizer(PreprocessorComponent):
     def __init__(self):
         self.allowed_postags = DEFAULT_ALLOWED_POSTAGS
-        spacy_udpipe.download("sk")
         self.lemmatizer = spacy_udpipe.load("sk")
 
     # @calculate_stats(name="Lemmatization")
@@ -104,32 +103,37 @@ class TextPreprocessor:
         self.already_processed_path = conf.get('already_processed_path')
         self.docs = utils.load_or_create_csv(
             self.already_processed_path, ['doc_id', 'title', 'terms']
-        ).set_index('doc_id')['terms'].to_dict()
-        self.components = self.init_components(conf)
+        ).set_index('title')['terms'].to_dict()
+        self.conf = conf
 
-    def init_components(self, conf: dict[str, object]) -> list[PreprocessorComponent]:
-        components = []
+    def init_components(self) -> dict[str, PreprocessorComponent]:
+        components = {}
         if 'normalize' in self.component_names:
-            components.append(Normalizer())
+            components['normalizer'] = Normalizer()
         if 'tokenize' in self.component_names:
-            components.append(Tokenizer())
+            components['tokenizer'] = Tokenizer()
         if 'remove_stopwords' in self.component_names:
-            components.append(StopWordsRemover(conf.get('stop_words_path')))
+            components['stopwords_remover'] = StopWordsRemover(self.conf.get('stop_words_path'))
         if 'lemmatize' in self.component_names:
-            components.append(Lemmatizer())
+            spacy_udpipe.download("sk")
+            components['lemmatizer'] = Lemmatizer()
         if 'stop_words_cleaner' in self.component_names:
             # after lemmatize we want to remove stop words again
-            components.append(StopWordsRemover(conf.get('stop_words_path')))
+            components['stopwords_cleaner'] = StopWordsRemover(self.conf.get('stop_words_path'))
         if 'document_saver' in self.component_names:
-            components.append(DocumentSaver(self.already_processed_path))
+            components['document_saver'] = DocumentSaver(self.already_processed_path)
         return components
 
-    def preprocess(self, documents: list[WikiPage], pbar_position=0):
+    def _preprocess(self, documents: list[WikiPage], pbar_position=0):
         logger.info(f"Preprocessing {len(documents)} documents.")
+        components = self.init_components()
 
-        for document in tqdm(documents, position=pbar_position, leave=False):
-            if document.doc_id in self.docs:
-                document.terms = ast.literal_eval(self.docs[document.doc_id])
+        for document in tqdm(documents, desc=f"{pbar_position}", position=pbar_position, leave=False):
+            if document.title in self.docs:
+                document.terms = ast.literal_eval(self.docs[document.title])
             else:
-                for component in self.components:
+                for name, component in components.items():
                     component.process(document)
+
+    def preprocess(self, documents: list[WikiPage], workers=4):
+        utils.generic_parallel_execution(documents, self._preprocess, workers=workers, executor='process')
