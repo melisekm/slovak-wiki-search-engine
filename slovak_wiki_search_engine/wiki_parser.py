@@ -1,11 +1,11 @@
 import itertools
 import logging
+import random
 import re
 from collections import defaultdict
 from timeit import default_timer as timer
 from typing import Optional, Union
 
-import numpy as np
 from tqdm import tqdm
 
 import utils
@@ -26,7 +26,8 @@ class Infobox:
 
 
 class WikiPage:
-    def __init__(self, title: str, text: str, infobox: Optional[Infobox] = None):
+    def __init__(self, title: str, text: str, infobox: Optional[Infobox] = None, doc_id: Optional[int] = None):
+        self.doc_id = doc_id
         self.title = title
         self.raw_text = text
         self.infobox = infobox
@@ -97,10 +98,10 @@ class WikiParser:
             return attr_grp.group(1)
         return ''
 
-    def parse_pages(self, pages) -> tuple[list[WikiPage], dict[Union[int, list, defaultdict]]]:
+    def parse_pages(self, pages, pbar_position=0) -> tuple[list[WikiPage], dict[Union[int, list, defaultdict]]]:
         parsed_pages = []
         infobox_types = defaultdict(list)
-        for page in tqdm(pages):
+        for page in tqdm(pages, position=pbar_position):
             title = self._parse_attr(page, self.TITLE_PATTERN)
             text = self._parse_attr(page, self.TEXT_PATTERN)
             infobox = self.parse_infobox(text)
@@ -130,10 +131,13 @@ class WikiParser:
 
     def parse_wiki(self, wikipedia_data_path: str, workers=4) -> list[WikiPage]:
         pages = self.get_pages(wikipedia_data_path)
-        space = np.linspace(0, len(pages), workers + 1, dtype=int)
-        results = utils.generic_parallel_execution(pages, space, self.parse_pages, workers, executor='process')
-        merged_parsed_documents = list(itertools.chain.from_iterable(x[0] for x in results))
+        results = utils.generic_parallel_execution(pages, self.parse_pages, workers=workers, executor='process')
+        merged_parsed_documents: list[WikiPage] = list(itertools.chain.from_iterable(x[0] for x in results))
+        for idx, doc in enumerate(merged_parsed_documents):
+            doc.doc_id = idx
         self.merge_stats(results)
+        # shuffle
+        random.shuffle(merged_parsed_documents)
         return merged_parsed_documents
 
     def merge_stats(self, results: tuple[list[WikiPage], dict[Union[int, list, defaultdict]]]):

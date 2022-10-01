@@ -1,7 +1,8 @@
 {
-  "inverted_index_path": "data/inverted_index.pickle",
-  "sk_wikipedia_dump_path": "data/sk_wikipedia_dump_small_1m.xml",
-  "stop_words_path": "data/SK_stopwords.txt",
+  "inverted_index_path": "../data/inverted_index.pickle",
+  "sk_wikipedia_dump_path": "../data/sk_wikipedia_dump_small_1m.xml",
+  "stop_words_path": "../data/SK_stopwords.txt",
+  "already_parsed_path": "../data/already_parsed.csv",
   "preprocessor_components": [
     "normalize",
     "tokenize",
@@ -10,5 +11,5 @@
     "stop_words_cleaner"
   ],
   "workers": 4,
-  "verbose": true,
+  "verbose": true
 }

@@ -4,18 +4,32 @@ import os
 import timeit
 import traceback
 from concurrent.futures import as_completed, ProcessPoolExecutor, ThreadPoolExecutor
+from os.path import exists
 from pathlib import Path
 from timeit import default_timer as timer
+
+import numpy as np
+import pandas as pd
 
 import wiki_parser
 
 logger = logging.getLogger(__name__)
 
-CONF_FILE_PATH = 'drive/conf.json'
 DEFAULT_CONF = {
-    'inverted_index_path': 'data/inverted_index.pickle',
-    'sk_wikipedia_dump_path': 'data/sk_wikipedia_dump_small_1m.xml',
-    'stop_words_path': 'data/SK_stopwords.txt',
+    'inverted_index_path': '../data/inverted_index.pickle',
+    'sk_wikipedia_dump_path': '../data/sk_wikipedia_dump_small_1m.xml',
+    'stop_words_path': '../data/SK_stopwords.txt',
+    'already_processed_path': '../data/already_parsed.csv',
+    "preprocessor_components": [
+        "normalize",
+        "tokenize",
+        "remove_stopwords",
+        "lemmatize",
+        "stop_words_cleaner",
+        "document_saver"
+    ],
+    "workers": 4,
+    "verbose": True
 }
 
 
@@ -56,7 +70,16 @@ def get_file_path(file_path):
         raise FileNotFoundError(f"File {file_path} not found")
 
 
-def generic_parallel_execution(data, space, func, workers=4, executor='process', *args, **kwargs):
+def load_or_create_csv(name: str, column_names: list[str]) -> pd.DataFrame:
+    if exists(name):
+        df = pd.read_csv(name, encoding='utf-8')
+    else:
+        df = pd.DataFrame(columns=column_names)
+        df.to_csv(name, index=False)
+    return df
+
+
+def generic_parallel_execution(data, func, *args, workers=4, executor='process', **kwargs):
     if executor == 'process':
         executor_type = ProcessPoolExecutor
     elif executor == 'thread':
@@ -64,11 +87,13 @@ def generic_parallel_execution(data, space, func, workers=4, executor='process',
     else:
         raise Exception(f"Executor {executor} not supported")
 
+    space = np.linspace(0, len(data), workers + 1, dtype=int)
     results = []
     start_time = timer()
     with executor_type(max_workers=workers) as executor:
         futures = set()
         for i in range(workers):
+            kwargs['pbar_position'] = i
             future = executor.submit(func, data[space[i]:space[i + 1]], *args, **kwargs)
             logger.info(f"Starting worker {future}")
             futures.add(future)

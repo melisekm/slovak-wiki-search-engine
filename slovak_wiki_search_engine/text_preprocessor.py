@@ -1,15 +1,16 @@
 import logging
 import re
-
-import spacy_udpipe
 from abc import ABC
+import ast
 
 import gensim
+import pandas as pd
+import spacy_udpipe
+import unicodedata
 from tqdm import tqdm
 
-import unicodedata
-
-from utils import get_file_path, calculate_stats
+import utils
+from utils import get_file_path
 from wiki_parser import WikiPage
 
 logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ class StopWordsRemover(PreprocessorComponent):
     def __init__(self, stop_words_path: str):
         self.stop_words_path = get_file_path(stop_words_path)
 
-    @calculate_stats(name="Stop words remover")
+    # @calculate_stats(name="Stop words remover")
     def process(self, document: WikiPage):
         with open(self.stop_words_path, encoding="UTF-8") as stopwords_file:
             stop_words_list = [line.strip() for line in stopwords_file]
@@ -77,24 +78,36 @@ class Lemmatizer(PreprocessorComponent):
         spacy_udpipe.download("sk")
         self.lemmatizer = spacy_udpipe.load("sk")
 
-        self.stats = {}
-
-    @calculate_stats(name="Lemmatization")
+    # @calculate_stats(name="Lemmatization")
     def process(self, document: WikiPage):
         doc = self.lemmatizer(" ".join(document.terms))
         document.terms = [
             CUSTOM_WORDS[token.lemma_] if token.lemma_ in CUSTOM_WORDS else token.lemma_
             for token in doc
-            if token.pos_ in self.allowed_postags
+            if token.pos_ in self.allowed_postags and len(token.lemma_) > 1
         ]
 
 
+class DocumentSaver(PreprocessorComponent):
+    def __init__(self, already_processed_path: str):
+        self.already_processed_path = already_processed_path
+
+    def process(self, document: WikiPage):
+        pd.DataFrame([[document.doc_id, document.title, document.terms]]).to_csv(
+            self.already_processed_path, index=False, header=False, mode='a', encoding='utf-8'
+        )
+
+
 class TextPreprocessor:
-    def __init__(self, component_names: list[str], conf: dict[str, str]):
+    def __init__(self, component_names: list[str], conf: dict[str, object]):
         self.component_names = component_names
+        self.already_processed_path = conf.get('already_processed_path')
+        self.docs = utils.load_or_create_csv(
+            self.already_processed_path, ['doc_id', 'title', 'terms']
+        ).set_index('doc_id')['terms'].to_dict()
         self.components = self.init_components(conf)
 
-    def init_components(self, conf: dict[str, str]) -> list[PreprocessorComponent]:
+    def init_components(self, conf: dict[str, object]) -> list[PreprocessorComponent]:
         components = []
         if 'normalize' in self.component_names:
             components.append(Normalizer())
@@ -107,10 +120,16 @@ class TextPreprocessor:
         if 'stop_words_cleaner' in self.component_names:
             # after lemmatize we want to remove stop words again
             components.append(StopWordsRemover(conf.get('stop_words_path')))
+        if 'document_saver' in self.component_names:
+            components.append(DocumentSaver(self.already_processed_path))
         return components
 
-    def preprocess(self, documents: list[WikiPage]):
+    def preprocess(self, documents: list[WikiPage], pbar_position=0):
         logger.info(f"Preprocessing {len(documents)} documents.")
-        for component in tqdm(self.components):
-            for document in tqdm(documents, desc=component.__class__.__name__):
-                component.process(document)
+
+        for document in tqdm(documents, position=pbar_position, leave=False):
+            if document.doc_id in self.docs:
+                document.terms = ast.literal_eval(self.docs[document.doc_id])
+            else:
+                for component in self.components:
+                    component.process(document)
