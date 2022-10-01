@@ -1,8 +1,8 @@
 import pickle
 from typing import Optional
 
+import vectorizer
 from text_preprocessor import TextPreprocessor
-from vectorizer import TfIdfVectorizer
 from wiki_parser import WikiPage, WikiParser
 
 
@@ -48,9 +48,9 @@ class InvertedIndex:
         parsed_documents = wiki_parser.parse_wiki(wikipedia_data_path, workers)
 
         text_preprocessor = TextPreprocessor(preprocessor_components, conf)
-        text_preprocessor.preprocess(parsed_documents)
+        parsed_documents = text_preprocessor.preprocess(parsed_documents, workers)
 
-        tfidf_vectorizer = TfIdfVectorizer(len(parsed_documents), self)
+        tfidf_vectorizer = vectorizer.TfIdfVectorizer(len(parsed_documents), self)
 
         self._index = {}
         for document in parsed_documents:

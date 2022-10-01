@@ -1,4 +1,5 @@
 import ast
+import itertools
 import logging
 import re
 from abc import ABC
@@ -54,12 +55,12 @@ class Normalizer(PreprocessorComponent):
 class StopWordsRemover(PreprocessorComponent):
     def __init__(self, stop_words_path: str):
         self.stop_words_path = get_file_path(stop_words_path)
+        with open(self.stop_words_path, encoding="UTF-8") as stopwords_file:
+            self.stop_words_list = [line.strip() for line in stopwords_file]
 
     # @calculate_stats(name="Stop words remover")
     def process(self, document: WikiPage):
-        with open(self.stop_words_path, encoding="UTF-8") as stopwords_file:
-            stop_words_list = [line.strip() for line in stopwords_file]
-        document.terms = [word for word in document.terms if word not in stop_words_list and len(word) > 1]
+        document.terms = [word for word in document.terms if word not in self.stop_words_list and len(word) > 1]
 
 
 class Tokenizer(PreprocessorComponent):
@@ -105,6 +106,8 @@ class TextPreprocessor:
             self.already_processed_path, ['doc_id', 'title', 'terms']
         ).set_index('title')['terms'].to_dict()
         self.conf = conf
+        if 'lemmatize' in component_names:
+            spacy_udpipe.download("sk")
 
     def init_components(self) -> dict[str, PreprocessorComponent]:
         components = {}
@@ -115,7 +118,6 @@ class TextPreprocessor:
         if 'remove_stopwords' in self.component_names:
             components['stopwords_remover'] = StopWordsRemover(self.conf.get('stop_words_path'))
         if 'lemmatize' in self.component_names:
-            spacy_udpipe.download("sk")
             components['lemmatizer'] = Lemmatizer()
         if 'stop_words_cleaner' in self.component_names:
             # after lemmatize we want to remove stop words again
@@ -134,6 +136,10 @@ class TextPreprocessor:
             else:
                 for name, component in components.items():
                     component.process(document)
+        return documents
 
-    def preprocess(self, documents: list[WikiPage], workers=4):
-        utils.generic_parallel_execution(documents, self._preprocess, workers=workers, executor='process')
+    def preprocess(self, documents: list[WikiPage], workers=4) -> list[WikiPage]:
+        preprocessed_documents = utils.generic_parallel_execution(
+            documents, self._preprocess, workers=workers, executor='process'
+        )
+        return list(itertools.chain.from_iterable(preprocessed_documents))

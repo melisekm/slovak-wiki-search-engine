@@ -1,11 +1,11 @@
 import math
 
-from indexer import InvertedIndex
+import indexer
 from wiki_parser import WikiPage
 
 
 class TfIdfVectorizer:
-    def __init__(self, document_count: int, inverted_index: InvertedIndex):
+    def __init__(self, document_count: int, inverted_index: 'indexer.InvertedIndex'):
         self.document_count = document_count
         self.inverted_index = inverted_index
 
@@ -18,8 +18,6 @@ class TfIdfVectorizer:
             tfidf = self._tfidf(term, document)
             vector.append(tfidf)
         return vector
-
-
 
     def _tfidf(self, term: str, document: WikiPage) -> float:
         tf = self._tf(term, document)
