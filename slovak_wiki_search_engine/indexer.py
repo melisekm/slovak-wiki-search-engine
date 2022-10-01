@@ -42,8 +42,7 @@ class InvertedIndex:
     def create(self, wikipedia_data_path: str, inverted_index_path: str, preprocessor_components: list[str]):
         self._index = {}
         wiki_parser = WikiParser()
-        with open(wikipedia_data_path, 'r') as wikipedia_data_file:
-            parsed_documents = wiki_parser.parse(wikipedia_data_file)
+        parsed_documents = wiki_parser.parse(wikipedia_data_path)
 
         text_preprocessor = TextPreprocessor(preprocessor_components)
         text_preprocessor.preprocess(parsed_documents)

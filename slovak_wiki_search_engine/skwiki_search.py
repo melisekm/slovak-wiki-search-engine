@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     conf = utils.get_conf('drive/conf.json')
     inverted_index_path = conf.get('inverted_index_path')
-    wikipedia_path = conf.get('wikipedia_dump_small_path')
+    wikipedia_path = conf.get('sk_wikipedia_dump_small_100k_path')
     preprocessor_components = conf.get('preprocessor_components')
 
     inverted_index = InvertedIndex()
