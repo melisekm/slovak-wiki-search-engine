@@ -12,7 +12,7 @@ class TestTfIdf(unittest.TestCase):
         document2 = WikiPage(-1, "Test", "This is another another example example example")
         document2.terms = ["this", "is", "another", "another", "example", "example", "example"]
         inverted_index = InvertedIndex()
-        inverted_index._create([document1, document2])
+        inverted_index._create_index([document1, document2])
 
         vectorizer = TfIdfVectorizer(2, inverted_index)
 

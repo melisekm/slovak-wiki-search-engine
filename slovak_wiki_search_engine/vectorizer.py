@@ -1,13 +1,22 @@
+import logging
 import math
 
 import indexer
 from wiki_parser import WikiPage
+
+logger = logging.getLogger(__name__)
 
 
 class TfIdfVectorizer:
     def __init__(self, document_count: int, inverted_index: 'indexer.InvertedIndex'):
         self.document_count = document_count
         self.inverted_index = inverted_index
+
+    def vectorize(self, documents: list[WikiPage]) -> list[WikiPage]:
+        logger.info(f"Vectorizing {len(documents)} documents")
+        for document in documents:
+            document.vector = self.vectorize_document(document)
+        return documents
 
     def vectorize_document(self, document: WikiPage) -> list[float]:
         vector = []
