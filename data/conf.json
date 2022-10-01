@@ -1,13 +1,14 @@
 {
   "inverted_index_path": "data/inverted_index.pickle",
-  "sk_wikipedia_dump_small_100k_path": "data/sk_wikipedia_dump_small_100k.xml",
-  "sk_wikipedia_dump_small_1m_path": "data/sk_wikipedia_dump_small_1m.xml",
-  "sk_wikipedia_dump_small_full_path": "data/sk_wikipedia_dump_full.xml",
+  "sk_wikipedia_dump_path": "data/sk_wikipedia_dump_small_1m.xml",
+  "stop_words_path": "data/SK_stopwords.txt",
   "preprocessor_components": [
     "normalize",
     "tokenize",
     "remove_stopwords",
-    "lemmatize"
+    "lemmatize",
+    "stop_words_cleaner"
   ],
-  "workers": 4
+  "workers": 4,
+  "verbose": true,
 }

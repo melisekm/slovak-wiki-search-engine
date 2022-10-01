@@ -42,17 +42,19 @@ class InvertedIndex:
             raise Exception(f'Inverted index does not contain term {term}.')
         return indexrecord
 
-    def create(self, wikipedia_data_path: str, inverted_index_path: str, preprocessor_components: list[str], workers=4):
-        self._index = {}
+    def create(self, conf: dict[str, str], preprocessor_components: list[str], workers=4):
+        wikipedia_data_path = conf['sk_wikipedia_dump_path']
+        inverted_index_path = conf['inverted_index_path']
 
         wiki_parser = WikiParser()
         parsed_documents = wiki_parser.parse_wiki(wikipedia_data_path, workers)
 
-        text_preprocessor = TextPreprocessor(preprocessor_components)
+        text_preprocessor = TextPreprocessor(preprocessor_components, conf)
         text_preprocessor.preprocess(parsed_documents)
 
         tfidf_vectorizer = TfIdfVectorizer(len(parsed_documents), self)
 
+        self._index = {}
         for document in parsed_documents:
             for term in document.terms:
                 if term not in self._index:
