@@ -15,12 +15,13 @@ if __name__ == '__main__':
     inverted_index_path = conf.get('inverted_index_path')
     wikipedia_path = conf.get('sk_wikipedia_dump_small_100k_path')
     preprocessor_components = conf.get('preprocessor_components')
+    workers = conf.get('workers')
 
     inverted_index = InvertedIndex()
     if os.path.exists(inverted_index_path):
         inverted_index.load(inverted_index_path)
     else:
-        inverted_index.create(wikipedia_path, inverted_index_path, preprocessor_components)
+        inverted_index.create(wikipedia_path, inverted_index_path, preprocessor_components, workers)
 
     search_engine = SearchEngine(inverted_index, params)
     results = search_engine.get_results()

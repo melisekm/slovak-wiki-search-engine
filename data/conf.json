@@ -8,5 +8,6 @@
     "tokenize",
     "remove_stopwords",
     "lemmatize"
-  ]
+  ],
+  "workers": 4
 }

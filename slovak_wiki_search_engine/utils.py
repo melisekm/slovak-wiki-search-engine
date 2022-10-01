@@ -4,7 +4,7 @@ import os
 CONF_FILE_PATH = 'drive/conf.json'
 DEFAULT_CONF = {
     'inverted_index_path': 'data/inverted_index.pickle',
-    'sk_wikipedia_dump_small_1m_path': 'data/sk_wikipedia_dump_small_1m.xml',
+    'sk_wikipedia_dump_small_1m_path': 'data/sk_wikipedia_dump_small_1m.xml',  # 14k pages
     'sk_wikipedia_dump_small_100k_path': 'data/sk_wikipedia_dump_small_100k.xml',  # 1213 pages
     'sk_wikipedia_dump_small_full_path': 'data/sk_wikipedia_dump_small_full.xml'  # 240k pages
 }

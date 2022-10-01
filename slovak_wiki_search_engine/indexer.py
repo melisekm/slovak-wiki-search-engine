@@ -3,7 +3,7 @@ from typing import Optional
 
 from text_preprocessor import TextPreprocessor
 from vectorizer import TfIdfVectorizer
-from wiki_parser import WikiParser, WikiPage
+from wiki_parser import WikiPage, parse_wiki, WikiParser
 
 
 class IndexRecord:
@@ -15,6 +15,9 @@ class IndexRecord:
     def add_document(self, document: WikiPage):
         self.count += 1
         self.documents.add(document)
+
+
+
 
 
 class InvertedIndex:
@@ -39,10 +42,11 @@ class InvertedIndex:
             raise Exception(f'Inverted index does not contain term {term}.')
         return indexrecord
 
-    def create(self, wikipedia_data_path: str, inverted_index_path: str, preprocessor_components: list[str]):
+    def create(self, wikipedia_data_path: str, inverted_index_path: str, preprocessor_components: list[str], workers=4):
         self._index = {}
+
         wiki_parser = WikiParser()
-        parsed_documents = wiki_parser.parse(wikipedia_data_path)
+        parsed_documents = wiki_parser.parse_wiki(wikipedia_data_path, workers)
 
         text_preprocessor = TextPreprocessor(preprocessor_components)
         text_preprocessor.preprocess(parsed_documents)
