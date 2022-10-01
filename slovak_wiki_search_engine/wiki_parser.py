@@ -33,7 +33,7 @@ class WikiPage:
         self.infobox = infobox
         self.infobox_title = infobox.name if infobox else None
         self.terms: Optional[list[str]] = None
-        self.tfidf_vector: Optional[list[float]] = None
+        self.vector: Optional[list[float]] = None
 
     def __str__(self):
         return f'WikiPage(title={self.title}, infobox={self.infobox_title})'

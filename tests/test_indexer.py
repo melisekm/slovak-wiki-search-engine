@@ -33,13 +33,26 @@ class TestIndexer(unittest.TestCase):
         conf = utils.DEFAULT_CONF
         conf['sk_wikipedia_dump_path'] = '../data/sk_wikipedia_dump_small_100k.xml'
         inverted_index_path = conf.get('inverted_index_path')
-        workers = 4
+        workers = 6
 
         inverted_index = indexer.InvertedIndex()
         if os.path.exists(inverted_index_path):
             inverted_index.load(inverted_index_path)
         else:
             inverted_index.create(conf, workers)
+
+        sorted_terms = {}
+        for term, index_record in inverted_index._index.items():
+            for document in index_record.documents:
+                index_of_term = document.terms.index(term)
+                sorted_terms[term] = document.vector[index_of_term]
+
+        sorted_terms = {k: v for k, v in sorted(sorted_terms.items(), key=lambda item: item[1], reverse=True)}
+        pass
+
+
+
+        pass
 
 
 if __name__ == '__main__':

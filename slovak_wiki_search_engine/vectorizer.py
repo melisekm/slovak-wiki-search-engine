@@ -24,8 +24,12 @@ class TfIdfVectorizer:
         idf = self._idf(term)
         return tf * idf
 
-    def _tf(self, term: str, document: WikiPage) -> float:
+    def _tf(self, term: str, document: WikiPage, sublinear_tf=False) -> float:
+        if sublinear_tf:
+            return 1 + math.log10(document.terms.count(term))
         return document.terms.count(term) / len(document.terms)
 
-    def _idf(self, term: str) -> float:
-        return math.log10(self.document_count / self.inverted_index.get(term).count)
+    def _idf(self, term: str, smooth_idf=False) -> float:
+        if smooth_idf:
+            return math.log10((1 + self.document_count) / (1 + self.inverted_index.get(term).document_frequency)) + 1
+        return math.log10(self.document_count / self.inverted_index.get(term).document_frequency)
