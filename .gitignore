@@ -152,3 +152,4 @@ cython_debug/
 .idea/
 
 data/sk_wikipedia*
+data/already_parsed.csv

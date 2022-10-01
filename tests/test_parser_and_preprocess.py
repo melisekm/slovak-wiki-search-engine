@@ -13,7 +13,7 @@ def run(parsed_documents, preprocessor_components, conf, pbar_position):
 
 class TestParserPreprocess(unittest.TestCase):
     def test_parser_and_preprocess(self):
-        wikipedia_data_path = '../data/sk_wikipedia_dump_small_1m.xml'
+        wikipedia_data_path = '../data/sk_wikipedia_dump_small_100k.xml'
         workers = 6
 
         wiki_parser = WikiParser()
