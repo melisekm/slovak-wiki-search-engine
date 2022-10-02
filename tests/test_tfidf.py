@@ -16,16 +16,16 @@ class TestTfIdf(unittest.TestCase):
 
         vectorizer = TfIdfVectorizer(inverted_index)
 
-        self.assertEqual(vectorizer._tf("this", document1), 0.2)
-        self.assertEqual(round(vectorizer._tf("this", document2), 2), 0.14)
+        self.assertEqual(vectorizer._tf("this", document1.terms), 0.2)
+        self.assertEqual(round(vectorizer._tf("this", document2.terms), 2), 0.14)
 
         self.assertEqual(vectorizer._idf("this"), 0)
-        self.assertEqual(vectorizer._tfidf("this", document1), 0)
-        self.assertEqual(vectorizer._tfidf("this", document2), 0)
+        self.assertEqual(vectorizer._tfidf("this", document1.terms), 0)
+        self.assertEqual(vectorizer._tfidf("this", document2.terms), 0)
 
-        self.assertEqual(vectorizer._tf("example", document1), 0)
-        self.assertEqual(round(vectorizer._tf("example", document2), 3), 0.429)
+        self.assertEqual(vectorizer._tf("example", document1.terms), 0)
+        self.assertEqual(round(vectorizer._tf("example", document2.terms), 3), 0.429)
         self.assertEqual(round(vectorizer._idf("example"), 3), 0.301)
 
-        self.assertEqual(round(vectorizer._tfidf("example", document1), 3), 0)
-        self.assertEqual(round(vectorizer._tfidf("example", document2), 3), 0.129)
+        self.assertEqual(round(vectorizer._tfidf("example", document1.terms), 3), 0)
+        self.assertEqual(round(vectorizer._tfidf("example", document2.terms), 3), 0.129)

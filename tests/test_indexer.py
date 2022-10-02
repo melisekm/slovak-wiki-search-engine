@@ -14,17 +14,17 @@ class TestIndexer(unittest.TestCase):
         inverted_index_path = conf.get('inverted_index_path')
         workers = 6
 
-        inverted_index = indexer
         if os.path.exists(inverted_index_path):
-            inverted_index.load(inverted_index_path)
+            inverted_index = indexer.load(inverted_index_path)
         else:
+            inverted_index = indexer.InvertedIndex()
             inverted_index.create(conf, workers)
 
-        self.assertEqual(len(inverted_index._index), 64625)
-        self.assertEqual(inverted_index.get('rusko').document_frequency, 56)
-        self.assertEqual(inverted_index.get('prezident').document_frequency, 44)
-        self.assertEqual(inverted_index.get('prezident').corpus_frequency, 131)
-        self.assertEqual(inverted_index.get('súbor').corpus_frequency, 1530)
+        self.assertEqual(len(inverted_index._index), 65269)
+        self.assertEqual(inverted_index.get('rusko').document_frequency, 58)
+        self.assertEqual(inverted_index.get('prezident').document_frequency, 46)
+        self.assertEqual(inverted_index.get('prezident').corpus_frequency, 158)
+        self.assertEqual(inverted_index.get('súbor').corpus_frequency, 1558)
 
 
 if __name__ == '__main__':

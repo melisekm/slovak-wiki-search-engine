@@ -1,6 +1,6 @@
 import logging
 import pickle
-from typing import Optional
+from typing import Optional, Union
 
 import vectorizer
 from text_preprocessor import TextPreprocessor
@@ -53,6 +53,7 @@ class InvertedIndex:
         logger.info("Adding terms to inverted index...")
         self._index = {}
         for document in parsed_documents:
+            assert document.terms
             for term in document.terms:
                 if term not in self._index:
                     self._index[term] = IndexRecord(term)
@@ -60,7 +61,7 @@ class InvertedIndex:
         self.documents_count = len(parsed_documents)
         logger.info(f"Index created. Total terms in index: {len(self._index)}")
 
-    def create(self, conf: dict[str, object], workers=4):
+    def create(self, conf: dict[str, Union[str, int, list[str]]], workers=4):
         wikipedia_data_path: str = conf['sk_wikipedia_dump_path']
         inverted_index_path: str = conf['inverted_index_path']
         preprocessor_components: list[str] = conf['preprocessor_components']
@@ -77,7 +78,7 @@ class InvertedIndex:
         self._create_index(parsed_documents)
 
         tfidf_vectorizer = vectorizer.TfIdfVectorizer(self)
-        tfidf_vectorizer.vectorize(parsed_documents)
+        tfidf_vectorizer.vectorize_documents(parsed_documents)
 
         self.save(inverted_index_path)
         logger.info("Inverted index created.")

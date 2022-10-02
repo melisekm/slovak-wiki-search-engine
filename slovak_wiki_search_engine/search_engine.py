@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from arg_parser import QueryBooleanOperator
 from indexer import InvertedIndex
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class SearchEngine:
-    def __init__(self, inverted_index: InvertedIndex, conf: dict[str, object], **kwargs):
+    def __init__(self, inverted_index: InvertedIndex, conf: dict[str, Union[str, int, list[str]]], **kwargs):
         self.inverted_index = inverted_index
         self.query = kwargs['query']
         self.boolean_operator = kwargs.get('boolean_operator', QueryBooleanOperator.AND)
@@ -24,7 +25,7 @@ class SearchEngine:
         self.text_preprocessor = TextPreprocessor(preprocessor_components, self.conf)
         self.vectorizer = TfIdfVectorizer(self.inverted_index)
 
-    def search(self):
+    def search(self) -> list[tuple[WikiPage, float]]:
         query = WikiPage(-1, None, self.query)
         logger.info(f'Original Query: {self.query}')
         query = self.text_preprocessor.preprocess([query], workers=1)[0]
@@ -46,9 +47,8 @@ class SearchEngine:
 
         logger.info(f'Relevant documents count: {len(relevant_documents)}')
 
-        query.vector = self.vectorizer.vectorize_document(query)
+        query.vector = self.vectorizer.vectorize_terms(query.terms)
         # calculate cosine similarity between query and relevant documents
-        relevant_documents = cosine_similarity(query, relevant_documents)
-        results_documents = relevant_documents[:self.results_count]
-        logger.info(f'Relevant documents count after limit: {len(results_documents)}')
-        return results_documents
+        relevant_documents = cosine_similarity(query, relevant_documents)[:self.results_count]
+        logger.info(f'Relevant documents count after limit: {len(relevant_documents)}')
+        return relevant_documents

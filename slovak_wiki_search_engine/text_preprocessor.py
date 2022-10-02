@@ -3,6 +3,7 @@ import itertools
 import logging
 import re
 from abc import ABC
+from typing import Union
 
 import gensim
 import pandas as pd
@@ -99,7 +100,7 @@ class DocumentSaver(PreprocessorComponent):
 
 
 class TextPreprocessor:
-    def __init__(self, component_names: list[str], conf: dict[str, object]):
+    def __init__(self, component_names: list[str], conf: dict[str, Union[str, int, list[str]]]):
         self.component_names = component_names
         self.already_processed_path = conf.get('already_processed_path')
         self.docs = utils.load_or_create_csv(
@@ -110,7 +111,7 @@ class TextPreprocessor:
             spacy_udpipe.download("sk")
 
     def init_components(self) -> dict[str, PreprocessorComponent]:
-        components = {}
+        components: dict[str, PreprocessorComponent] = {}
         if 'normalize' in self.component_names:
             components['normalizer'] = Normalizer()
         if 'tokenize' in self.component_names:

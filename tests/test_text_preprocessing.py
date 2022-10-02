@@ -58,7 +58,8 @@ class TestTextPreprocessing(unittest.TestCase):
 
         conf = utils.DEFAULT_CONF
         preprocessor_components = conf['preprocessor_components']
-        preprocessor_components.remove("document_saver")
+        if "document_saver" in preprocessor_components:
+            preprocessor_components.remove("document_saver")
 
         parsed_documents = [document]
         text_preprocessor = TextPreprocessor(preprocessor_components, conf)
@@ -85,4 +86,4 @@ class TestTextPreprocessing(unittest.TestCase):
         self.assertIsNotNone(main_page)
         self.assertEqual(main_page.doc_id, 0)
         self.assertEqual(main_page.title, 'Hlavná stránka')
-        self.assertEqual(len(parsed_documents), 1213)
+        self.assertEqual(len(parsed_documents), 1215)

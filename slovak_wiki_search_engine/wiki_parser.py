@@ -4,7 +4,7 @@ import random
 import re
 from collections import defaultdict
 from timeit import default_timer as timer
-from typing import Optional, Union
+from typing import Optional, Union, Any
 
 from tqdm import tqdm
 
@@ -32,8 +32,8 @@ class WikiPage:
         self.raw_text = text
         self.infobox = infobox
         self.infobox_title = infobox.name if infobox else None
-        self.terms: Optional[list[str]] = None
-        self.vector: Optional[list[float]] = None
+        self.terms: list[str] = []
+        self.vector: list[float] = []
 
     def __str__(self):
         return f'WikiPage(title={self.title}, infobox={self.infobox_title})'
@@ -98,8 +98,7 @@ class WikiParser:
             return attr_grp.group(1)
         return ''
 
-    def parse_pages(self, pages: tuple[int, str], pbar_position=0) -> tuple[list[WikiPage],
-                                                                            dict[Union[int, list, defaultdict]]]:
+    def parse_pages(self, pages: tuple[int, str], pbar_position=0):
         parsed_pages = []
         infobox_types = defaultdict(list)
         for page, idx in tqdm(pages, desc=f"{pbar_position}", position=pbar_position):
@@ -121,7 +120,7 @@ class WikiParser:
 
         return parsed_pages, stats
 
-    def get_pages(self, wikipedia_data_path: str) -> list[tuple[int, str]]:
+    def get_pages(self, wikipedia_data_path: str) -> list[tuple[str, int]]:
         logger.info(f'Parsing pages from {wikipedia_data_path}')
         read_time = timer()
         with open(wikipedia_data_path, 'r', encoding='UTF-8') as wikipedia_data_file:
@@ -138,7 +137,8 @@ class WikiParser:
         random.shuffle(merged_parsed_documents)
         return merged_parsed_documents
 
-    def merge_stats(self, results: tuple[list[WikiPage], dict[Union[int, list, defaultdict]]]):
+    def merge_stats(self,
+                    results: tuple[list[WikiPage], dict[str, Union[int, list[WikiPage], defaultdict[Any, list]]]]):
         for stat in (x[1] for x in results):
             for key, value in stat.items():
                 if key not in self.stats:

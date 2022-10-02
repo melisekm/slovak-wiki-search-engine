@@ -22,7 +22,7 @@ class TestSearchEngine(unittest.TestCase):
             inverted_index.create(conf, workers)
 
         params = {
-            'query': 'prezident Slovensko',
+            'query': 'Kto je prezidentom Ruskej federácie?',
             'boolean_operator': QueryBooleanOperator.OR,
             'results_count': 30,
             'relevant_documents_count': 100,
@@ -30,7 +30,11 @@ class TestSearchEngine(unittest.TestCase):
 
         search_engine = SearchEngine(inverted_index, conf, **params)
         results = search_engine.search()
-        utils.format_results(results)
+        # utils.format_results(results)
+
+        self.assertEqual(len(results), 30)
+        self.assertIn('Rusko', [result[0].title for result in results])
+        self.assertIn('Vladimir Vladimirovič Putin', [result[0].title for result in results])
 
 
 if __name__ == '__main__':

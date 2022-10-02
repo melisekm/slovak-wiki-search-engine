@@ -139,10 +139,11 @@ def calculate_stats(name):
     return decorator
 
 
-def cosine_similarity(query: 'wiki_parser.WikiPage', relevant_docs: list['wiki_parser.WikiPage']):
+def cosine_similarity(query: 'wiki_parser.WikiPage',
+                      relevant_docs: list['wiki_parser.WikiPage']) -> list[tuple['wiki_parser.WikiPage', float]]:
     score_map = {}
     for doc in relevant_docs:
-        score = 0
+        score = 0.0
         for token in query.terms:
             token_id = query.terms.index(token)
             try:
@@ -162,5 +163,6 @@ def format_results(results: list[tuple['wiki_parser.WikiPage', float]]):
         idx = len(results) - idx
         logger.info(f"Result {idx}: {document.title} - {score}")
         logger.info(f"URL: https://sk.wikipedia.org/wiki/{document.title.replace(' ', '_')}")
-        document.infobox_title and logger.info(f"Category: {document.infobox_title}")
+        if document.infobox_title:
+            logger.info(f"Category: {document.infobox_title}")
         logger.info("-" * 100)
