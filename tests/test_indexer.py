@@ -10,7 +10,7 @@ utils.setup_logging()
 class TestIndexer(unittest.TestCase):
     def test_indexer(self):
         conf = utils.DEFAULT_CONF
-        conf['sk_wikipedia_dump_path'] = '../data/sk_wikipedia_dump_small_100k.xml'
+        conf['sk_wikipedia_dump_path'] = 'data/sk_wikipedia_dump_small_100k.xml'
         inverted_index_path = conf.get('inverted_index_path')
         workers = 6
 

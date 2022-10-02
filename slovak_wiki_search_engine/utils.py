@@ -16,10 +16,10 @@ import wiki_parser
 logger = logging.getLogger(__name__)
 
 DEFAULT_CONF = {
-    'inverted_index_path': '../data/inverted_index.pickle',
-    'sk_wikipedia_dump_path': '../data/sk_wikipedia_dump_small_1m.xml',
-    'stop_words_path': '../data/SK_stopwords.txt',
-    'already_processed_path': '../data/already_parsed.csv',
+    'inverted_index_path': 'data/inverted_index.pickle',
+    'sk_wikipedia_dump_path': 'data/sk_wikipedia_dump_small_1m.xml',
+    'stop_words_path': 'data/SK_stopwords.txt',
+    'already_processed_path': 'data/already_parsed.csv',
     "preprocessor_components": [
         "normalize",
         "tokenize",
@@ -50,7 +50,7 @@ def get_conf(conf_file_path):
     if not os.path.exists(conf_file_path):
         os.makedirs(os.path.dirname(conf_file_path), exist_ok=True)
         with open(conf_file_path, 'w') as conf_file:
-            json.dump(DEFAULT_CONF, conf_file)
+            json.dump(DEFAULT_CONF, conf_file, indent=4)
         return DEFAULT_CONF
     with open(conf_file_path, 'r') as conf_file:
         conf = json.load(conf_file)
@@ -157,7 +157,7 @@ def cosine_similarity(query: 'wiki_parser.WikiPage',
 
 
 def format_results(results: list[tuple['wiki_parser.WikiPage', float]]):
-    for idx, result in enumerate(results[::-1]):
+    for idx, result in enumerate(results):
         document = result[0]
         score = result[1]
         idx = len(results) - idx

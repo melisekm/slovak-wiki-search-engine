@@ -100,10 +100,10 @@ class DocumentSaver(PreprocessorComponent):
 
 
 class TextPreprocessor:
-    def __init__(self, component_names: list[str], conf: dict[str, Union[str, int, list[str]]]):
+    def __init__(self, component_names: list[str], conf: dict[str, Union[str, int, list[str]]], load_docs=True):
         self.component_names = component_names
         self.already_processed_path = conf.get('already_processed_path')
-        self.docs = utils.load_or_create_csv(
+        self.docs = set() if not load_docs else utils.load_or_create_csv(
             self.already_processed_path, ['doc_id', 'title', 'terms']
         ).set_index('title')['terms'].to_dict()
         self.conf = conf
@@ -140,6 +140,9 @@ class TextPreprocessor:
         return documents
 
     def preprocess(self, documents: list[WikiPage], workers=4) -> list[WikiPage]:
+        if workers == 1:
+            return self._preprocess(documents)
+
         preprocessed_documents = utils.generic_parallel_execution(
             documents, self._preprocess, workers=workers, executor='process'
         )

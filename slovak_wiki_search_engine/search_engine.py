@@ -22,7 +22,7 @@ class SearchEngine:
         preprocessor_components: list = conf.get("preprocessor_components")
         if preprocessor_components and 'document_saver' in preprocessor_components:
             preprocessor_components.remove("document_saver")
-        self.text_preprocessor = TextPreprocessor(preprocessor_components, self.conf)
+        self.text_preprocessor = TextPreprocessor(preprocessor_components, self.conf, load_docs=False)
         self.vectorizer = TfIdfVectorizer(self.inverted_index)
 
     def search(self) -> list[tuple[WikiPage, float]]:
@@ -33,17 +33,22 @@ class SearchEngine:
             logger.info(f'Query Terms: {" AND ".join(query.terms)}')
         elif self.boolean_operator == QueryBooleanOperator.OR:
             logger.info(f'Query Terms: {" OR ".join(query.terms)}')
+        else:
+            raise AttributeError(f'Unknown boolean operator {self.boolean_operator}')
 
         relevant_documents = set()
         for term in query.terms:
-            try:
-                documents = self.inverted_index.get(term).documents
-                if self.boolean_operator == QueryBooleanOperator.AND:
-                    relevant_documents = relevant_documents.intersection(documents)
-                elif self.boolean_operator == QueryBooleanOperator.OR:
-                    relevant_documents = relevant_documents.union(documents)
-            except AttributeError as e:
-                logger.warning(e)
+            documents = self.inverted_index.get(term).documents
+            if not relevant_documents:
+                relevant_documents = documents
+            else:
+                try:
+                    if self.boolean_operator == QueryBooleanOperator.AND:
+                        relevant_documents = relevant_documents.intersection(documents)
+                    elif self.boolean_operator == QueryBooleanOperator.OR:
+                        relevant_documents = relevant_documents.union(documents)
+                except AttributeError as e:
+                    logger.warning(e)
 
         logger.info(f'Relevant documents count: {len(relevant_documents)}')
 

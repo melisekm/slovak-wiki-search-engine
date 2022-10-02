@@ -54,6 +54,10 @@ class WikiParser:
             r'\|\s*([^=]+?)\s*=\s*((?:<[^<>]*>|\[\[(?:(?!\]\]).)*\]\]|{{(?:(?!}}).)*}}|[^|{}\[\]<>]+)+)', re.DOTALL)
         self.LINK_PATTERN = re.compile(r'\[\[(?:(.+?)\|)?(.+?)\]\]')
 
+        self.DISALLOWED_PAGES = ["Wikipédia:", "MediaWiki:"]
+
+        self.ESCAPED_TAGS_PATTERN = re.compile(r'(\&lt\;).*?(\&gt\;)')
+
         self.stats = {}
 
     def parse_infobox(self, text: str):
@@ -86,7 +90,9 @@ class WikiParser:
             if not infobox_attr_value:
                 continue
 
-            infobox.properties[infobox_attr_name] = infobox_attr_value
+            infobox.properties[infobox_attr_name] = re.sub(
+                self.ESCAPED_TAGS_PATTERN, '', infobox_attr_value
+            ).replace('&amp;amp;', '&')
         if not infobox.properties:
             return None
 
@@ -103,6 +109,8 @@ class WikiParser:
         infobox_types = defaultdict(list)
         for page, idx in tqdm(pages, desc=f"{pbar_position}", position=pbar_position):
             title = self._parse_attr(page, self.TITLE_PATTERN)
+            if any(title.startswith(disallowed_page) for disallowed_page in self.DISALLOWED_PAGES):
+                continue
             text = self._parse_attr(page, self.TEXT_PATTERN)
             infobox = self.parse_infobox(text)
 
@@ -159,5 +167,5 @@ class WikiParser:
 if __name__ == '__main__':
     utils.setup_logging()
     wiki_parser = WikiParser()
-    results_t = wiki_parser.parse_wiki('../data/sk_wikipedia_dump_small_350k_articles.xml', workers=4)
+    results_t = wiki_parser.parse_wiki('data/sk_wikipedia_dump_small_350k_articles.xml', workers=4)
     pass

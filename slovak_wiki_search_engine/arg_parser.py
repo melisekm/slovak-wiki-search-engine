@@ -8,13 +8,16 @@ class QueryBooleanOperator(Enum):
     AND = 1
     OR = 2
 
+    def __eq__(self, other):
+        return other.value == self.value
+
 
 class ArgParser:
     def __init__(self):
         self.query = None
         self.boolean_operator = QueryBooleanOperator.AND
         self.results_count = 10
-        self.relevant_documents_count = 100
+        self.relevant_documents_count = 1000
 
     def parse(self, args):
         args = " ".join(args[1:])

@@ -33,7 +33,7 @@ class TestTextPreprocessing(unittest.TestCase):
         normalizer.process(document)
         tokenizer = Tokenizer()
         tokenizer.process(document)
-        stop_words_remover = StopWordsRemover('../data/SK_stopwords.txt')
+        stop_words_remover = StopWordsRemover('data/SK_stopwords.txt')
         stop_words_remover.process(document)
         self.assertEqual(document.terms, ['test', 'odstranenie', 'novych', 'riadkov', 'url', 'adries'])
 
@@ -44,7 +44,7 @@ class TestTextPreprocessing(unittest.TestCase):
         normalizer.process(document)
         tokenizer = Tokenizer()
         tokenizer.process(document)
-        stop_words_remover = StopWordsRemover('../data/SK_stopwords.txt')
+        stop_words_remover = StopWordsRemover('data/SK_stopwords.txt')
         stop_words_remover.process(document)
         lemmatizer = Lemmatizer()
         lemmatizer.process(document)
@@ -70,7 +70,7 @@ class TestTextPreprocessing(unittest.TestCase):
         ])
 
     def test_parser_and_preprocess(self):
-        wikipedia_data_path = '../data/sk_wikipedia_dump_small_100k.xml'
+        wikipedia_data_path = 'data/sk_wikipedia_dump_small_100k.xml'
         workers = 6
 
         wiki_parser = WikiParser()

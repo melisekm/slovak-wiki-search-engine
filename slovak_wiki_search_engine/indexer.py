@@ -53,7 +53,6 @@ class InvertedIndex:
         logger.info("Adding terms to inverted index...")
         self._index = {}
         for document in parsed_documents:
-            assert document.terms
             for term in document.terms:
                 if term not in self._index:
                     self._index[term] = IndexRecord(term)
