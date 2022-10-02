@@ -139,5 +139,28 @@ def calculate_stats(name):
     return decorator
 
 
-def format_results(results):
-    pass
+def cosine_similarity(query: 'wiki_parser.WikiPage', relevant_docs: list['wiki_parser.WikiPage']):
+    score_map = {}
+    for doc in relevant_docs:
+        score = 0
+        for token in query.terms:
+            token_id = query.terms.index(token)
+            try:
+                doc_token_id = doc.terms.index(token)
+                doc_token_vector_val = doc.vector[doc_token_id]
+            except ValueError:
+                doc_token_vector_val = 0
+            score += query.vector[token_id] * doc_token_vector_val
+        score_map[doc] = score
+    return sorted(score_map.items(), key=lambda x: x[1], reverse=True)
+
+
+def format_results(results: list[tuple['wiki_parser.WikiPage', float]]):
+    for idx, result in enumerate(results[::-1]):
+        document = result[0]
+        score = result[1]
+        idx = len(results) - idx
+        logger.info(f"Result {idx}: {document.title} - {score}")
+        logger.info(f"URL: https://sk.wikipedia.org/wiki/{document.title.replace(' ', '_')}")
+        document.infobox_title and logger.info(f"Category: {document.infobox_title}")
+        logger.info("-" * 100)

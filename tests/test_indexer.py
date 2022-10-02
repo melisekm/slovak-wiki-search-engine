@@ -14,7 +14,7 @@ class TestIndexer(unittest.TestCase):
         inverted_index_path = conf.get('inverted_index_path')
         workers = 6
 
-        inverted_index = indexer.InvertedIndex()
+        inverted_index = indexer
         if os.path.exists(inverted_index_path):
             inverted_index.load(inverted_index_path)
         else:

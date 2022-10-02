@@ -14,7 +14,7 @@ class TestTfIdf(unittest.TestCase):
         inverted_index = InvertedIndex()
         inverted_index._create_index([document1, document2])
 
-        vectorizer = TfIdfVectorizer(2, inverted_index)
+        vectorizer = TfIdfVectorizer(inverted_index)
 
         self.assertEqual(vectorizer._tf("this", document1), 0.2)
         self.assertEqual(round(vectorizer._tf("this", document2), 2), 0.14)

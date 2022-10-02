@@ -20,11 +20,11 @@ if __name__ == '__main__':
 
     inverted_index = InvertedIndex()
     if os.path.exists(inverted_index_path):
-        inverted_index.load(inverted_index_path)
+        load(inverted_index_path)
     else:
         inverted_index.create(conf, workers)
 
-    search_engine = SearchEngine(inverted_index, params)
-    results = search_engine.get_results()
+    search_engine = SearchEngine(inverted_index, conf, **params)
+    results = search_engine.search()
 
     utils.format_results(results)

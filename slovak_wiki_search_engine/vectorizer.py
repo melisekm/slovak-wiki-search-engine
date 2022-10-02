@@ -8,8 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class TfIdfVectorizer:
-    def __init__(self, document_count: int, inverted_index: 'indexer.InvertedIndex'):
-        self.document_count = document_count
+    def __init__(self, inverted_index: 'indexer.InvertedIndex'):
         self.inverted_index = inverted_index
 
     def vectorize(self, documents: list[WikiPage]) -> list[WikiPage]:
@@ -40,5 +39,6 @@ class TfIdfVectorizer:
 
     def _idf(self, term: str, smooth_idf=False) -> float:
         if smooth_idf:
-            return math.log10((1 + self.document_count) / (1 + self.inverted_index.get(term).document_frequency)) + 1
-        return math.log10(self.document_count / self.inverted_index.get(term).document_frequency)
+            return math.log10(
+                (1 + self.inverted_index.documents_count) / (1 + self.inverted_index.get(term).document_frequency)) + 1
+        return math.log10(self.inverted_index.documents_count / self.inverted_index.get(term).document_frequency)
