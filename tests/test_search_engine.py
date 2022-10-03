@@ -4,6 +4,7 @@ import indexer
 import utils
 from arg_parser import QueryBooleanOperator
 from search_engine import SearchEngine
+import tests
 
 utils.setup_logging()
 
@@ -12,7 +13,7 @@ class TestSearchEngine(unittest.TestCase):
     def test_search_engine(self):
         conf = utils.DEFAULT_CONF
         conf['sk_wikipedia_dump_path'] = 'data/sk_wikipedia_dump_small_100k.xml'
-        inverted_index_path = conf.get('inverted_index_path')
+        inverted_index_path = 'data/inverted_index_100k.pickle'
         workers = 6
 
         if os.path.exists(inverted_index_path):

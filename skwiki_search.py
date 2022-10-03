@@ -25,26 +25,7 @@ if __name__ == '__main__':
     search_engine = swse.search_engine.SearchEngine(inverted_index, conf, **params)
     start = timer()
     results = search_engine.search()[::-1]
-    end = timer()
+    run_time = timer() - start
+    swse.utils.format_results(results, run_time)
 
-    swse.utils.format_results(results)
-    print(f'Search time: {end - start:.2f}s')
 
-    msg = """Enter result number to learn more about the document which has a Category. [Q] to exit.: """
-    while True:
-        try:
-            num_to_show = input(msg)
-            if num_to_show.lower() == 'q':
-                break
-            num_to_show = int(num_to_show)
-        except ValueError:
-            print('Invalid input.')
-            continue
-        if num_to_show > len(results) or num_to_show < 1:
-            print('Invalid input.')
-            continue
-        result_to_show = results[len(results) - num_to_show][0]
-        if result_to_show.infobox:
-            print('\n'.join("{}: {}".format(k, v) for k, v in result_to_show.infobox.properties.items()))
-        else:
-            print('Please select result which has category.')

@@ -28,7 +28,7 @@ class ArgParseTester(unittest.TestCase):
             'query': 'kolko je 5+5?',
             'boolean_operator': QueryBooleanOperator.AND,
             'results_count': 10,
-            'relevant_documents_count': 100,
+            'relevant_documents_count': 1000,
         }
         self.assertEqual(arg_parser_mock(input_params), expected_params)
 
@@ -38,7 +38,7 @@ class ArgParseTester(unittest.TestCase):
             'query': 'Som clovek?',
             'boolean_operator': QueryBooleanOperator.OR,
             'results_count': 10,
-            'relevant_documents_count': 100,
+            'relevant_documents_count': 1000,
         }
         self.assertEqual(arg_parser_mock(input_params), expected_params)
 
@@ -48,7 +48,7 @@ class ArgParseTester(unittest.TestCase):
             'query': 'Kto je najlepsi?',
             'boolean_operator': QueryBooleanOperator.AND,
             'results_count': 15,
-            'relevant_documents_count': 100,
+            'relevant_documents_count': 1000,
         }
         self.assertEqual(arg_parser_mock(input_params), expected_params)
 
@@ -68,7 +68,7 @@ class ArgParseTester(unittest.TestCase):
             'query': '',
             'boolean_operator': QueryBooleanOperator.AND,
             'results_count': 10,
-            'relevant_documents_count': 100,
+            'relevant_documents_count': 1000,
         }
         self.assertEqual(arg_parser_mock(input_params), expected_params)
 
@@ -78,7 +78,7 @@ class ArgParseTester(unittest.TestCase):
             'query': '',
             'boolean_operator': QueryBooleanOperator.OR,
             'results_count': 10,
-            'relevant_documents_count': 100,
+            'relevant_documents_count': 1000,
         }
         self.assertEqual(arg_parser_mock(input_params), expected_params)
 
@@ -88,7 +88,7 @@ class ArgParseTester(unittest.TestCase):
             'query': 'test',
             'boolean_operator': QueryBooleanOperator.AND,
             'results_count': 10,
-            'relevant_documents_count': 100,
+            'relevant_documents_count': 1000,
         }
         self.assertEqual(arg_parser_mock(input_params), expected_params)
 
@@ -98,7 +98,7 @@ class ArgParseTester(unittest.TestCase):
             'query': 'test',
             'boolean_operator': QueryBooleanOperator.AND,
             'results_count': 10,
-            'relevant_documents_count': 100,
+            'relevant_documents_count': 1000,
         }
         self.assertEqual(arg_parser_mock(input_params), expected_params)
 
@@ -110,7 +110,7 @@ class ArgParseTester(unittest.TestCase):
             'query': 'Nezvyčajné kŕdle šťastných figliarskych ďatľov učia pri kótovanom ústí Váhu mĺkveho koňa Waldemara obžierať väčšie kusy exkluzívnej kôry s quesadillou',
             'boolean_operator': QueryBooleanOperator.OR,
             'results_count': 15,
-            'relevant_documents_count': 100,
+            'relevant_documents_count': 1000,
         }
         self.assertEqual(arg_parser_mock(input_params), expected_params)
 
@@ -120,6 +120,6 @@ class ArgParseTester(unittest.TestCase):
             'query': 'Kde byva elizabeth the second',
             'boolean_operator': QueryBooleanOperator.AND,
             'results_count': 10,
-            'relevant_documents_count': 100,
+            'relevant_documents_count': 1000,
         }
         self.assertEqual(arg_parser_mock(input_params), expected_params)

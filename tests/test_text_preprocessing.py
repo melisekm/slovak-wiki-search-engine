@@ -1,3 +1,4 @@
+import tests
 import unittest
 
 import utils
@@ -86,4 +87,4 @@ class TestTextPreprocessing(unittest.TestCase):
         self.assertIsNotNone(main_page)
         self.assertEqual(main_page.doc_id, 0)
         self.assertEqual(main_page.title, 'Hlavná stránka')
-        self.assertEqual(len(parsed_documents), 1215)
+        self.assertEqual(len(parsed_documents), 1105)
