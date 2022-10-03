@@ -1,6 +1,8 @@
 import logging
 import math
 
+from tqdm import tqdm
+
 import indexer
 from wiki_parser import WikiPage
 
@@ -13,7 +15,7 @@ class TfIdfVectorizer:
 
     def vectorize_documents(self, documents: list[WikiPage]) -> list[WikiPage]:
         logger.info(f"Vectorizing {len(documents)} documents")
-        for document in documents:
+        for document in tqdm(documents, desc="Vectorizing documents"):
             document.vector = self.vectorize_terms(document.terms)
         return documents
 

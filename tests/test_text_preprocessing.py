@@ -1,4 +1,4 @@
-import tests
+from tests import DEFAULT_TEST_CONF
 import unittest
 
 import utils
@@ -57,7 +57,7 @@ class TestTextPreprocessing(unittest.TestCase):
                             'učia pri kótovanom Váhu mĺkveho koňa Waldemara '
                             'obžierať väčšie kusy exkluzívnej kôry s quesadillou')
 
-        conf = utils.DEFAULT_CONF
+        conf = DEFAULT_TEST_CONF
         preprocessor_components = conf['preprocessor_components']
         if "document_saver" in preprocessor_components:
             preprocessor_components.remove("document_saver")
@@ -77,7 +77,7 @@ class TestTextPreprocessing(unittest.TestCase):
         wiki_parser = WikiParser()
         parsed_documents = wiki_parser.parse_wiki(wikipedia_data_path, workers)
 
-        conf = utils.DEFAULT_CONF
+        conf = DEFAULT_TEST_CONF
         preprocessor_components = conf['preprocessor_components']
 
         text_preprocessor = TextPreprocessor(preprocessor_components, conf)

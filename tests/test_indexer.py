@@ -1,6 +1,6 @@
 import os
 import unittest
-import tests
+from tests import DEFAULT_TEST_CONF
 
 import utils
 import indexer
@@ -10,7 +10,7 @@ utils.setup_logging()
 
 class TestIndexer(unittest.TestCase):
     def test_indexer(self):
-        conf = utils.DEFAULT_CONF
+        conf = DEFAULT_TEST_CONF
         conf['sk_wikipedia_dump_path'] = 'data/sk_wikipedia_dump_small_100k.xml'
         inverted_index_path = 'data/inverted_index_100k.pickle'
         workers = 6

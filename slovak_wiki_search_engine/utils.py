@@ -16,7 +16,7 @@ import wiki_parser
 logger = logging.getLogger(__name__)
 
 DEFAULT_CONF = {
-    'inverted_index_path': 'data/inverted_index.pickle',
+    'inverted_index_path': 'data/inverted_index_1m.pickle',
     'sk_wikipedia_dump_path': 'data/sk_wikipedia_dump_small_1m.xml',
     'stop_words_path': 'data/SK_stopwords.txt',
     'already_processed_path': 'data/already_parsed.csv',
