@@ -5,7 +5,7 @@ from slovak_wiki_search_engine.arg_parser import ArgParser, QueryBooleanOperator
 
 def arg_parser_mock(input_params):
     arg_parser = ArgParser()
-    arg_parser.parse(input_params)
+    arg_parser.parse(input_params, validate=False)
     return arg_parser.get_params()
 
 

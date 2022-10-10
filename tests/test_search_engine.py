@@ -29,8 +29,8 @@ class TestSearchEngine(unittest.TestCase):
             'relevant_documents_count': 100,
         }
 
-        search_engine = SearchEngine(inverted_index, conf, **params)
-        results = search_engine.search()
+        search_engine = SearchEngine(inverted_index, conf)
+        results = search_engine.search(params['query'], params['boolean_operator'], params['results_count'])
         # utils.format_results(results)
 
         self.assertEqual(len(results), 30)

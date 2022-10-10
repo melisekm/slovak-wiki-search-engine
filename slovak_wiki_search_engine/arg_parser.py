@@ -24,7 +24,7 @@ class ArgParser:
         self.results_count = DEFAULT_RESULTS_COUNT
         self.relevant_documents_count = DEFAULT_RELEAVNT_DOCS_COUNT
 
-    def parse(self, args):
+    def parse(self, args, validate=True):
         if isinstance(args, list):
             args = " ".join(args[1:])
 
@@ -44,7 +44,8 @@ class ArgParser:
         else:
             self.relevant_documents_count = DEFAULT_RELEAVNT_DOCS_COUNT
 
-        self.validate_params()
+        if validate:
+            self.validate_params()
         return self.get_params()
 
     def validate_params(self):
