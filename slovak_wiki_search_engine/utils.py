@@ -156,7 +156,8 @@ def cosine_similarity(query: 'wiki_parser.WikiPage',
     return sorted(score_map.items(), key=lambda x: x[1], reverse=True)
 
 
-def format_results(results: list[tuple['wiki_parser.WikiPage', float]], run_time: float):
+def format_results(results: list[tuple['wiki_parser.WikiPage', float]]):
+    results = results[::-1]
     for idx, result in enumerate(results):
         document = result[0]
         score = result[1]
@@ -166,9 +167,8 @@ def format_results(results: list[tuple['wiki_parser.WikiPage', float]], run_time
         if document.infobox_title:
             logger.info(f"Category: {document.infobox_title}")
         logger.info("-" * 100)
-
-    print(f'Search time: {run_time:.2f}s')
-    msg = "-" * 100 + """\nEnter result number to learn more about the document which has a Category. [Q] to exit.: """
+    prompt = "\nEnter result number to learn more about the document which has a Category. [Q] to go back.: "
+    msg = "-" * 100 + prompt
     while True:
         try:
             num_to_show = input(msg)
