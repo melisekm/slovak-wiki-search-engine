@@ -1,11 +1,12 @@
 import ast
 import itertools
 import logging
+import multiprocessing
 import re
+import sys
 from abc import ABC
 from typing import Union
 
-import gensim
 import pandas as pd
 import spacy_udpipe
 import unicodedata
@@ -59,7 +60,6 @@ class StopWordsRemover(PreprocessorComponent):
         with open(self.stop_words_path, encoding="UTF-8") as stopwords_file:
             self.stop_words_list = [line.strip() for line in stopwords_file]
 
-    # @calculate_stats(name="Stop words remover")
     def process(self, document: WikiPage):
         document.terms = [word for word in document.terms if word not in self.stop_words_list and len(word) > 1]
 
@@ -67,11 +67,20 @@ class StopWordsRemover(PreprocessorComponent):
 class Tokenizer(PreprocessorComponent):
     def __init__(self):
         self.deacc = REMOVE_ACCENTS
+        self.pat = re.compile(r'(((?![\d])\w)+)', re.UNICODE)
+        self.min_len = 2
+        self.max_len = 15
+
+    def _tokenize(self, text: str):
+        text = text.lower()
+        for match in self.pat.finditer(text):
+            yield match.group()
 
     def process(self, document: WikiPage):
-        document.terms = gensim.utils.simple_preprocess(
-            document.terms, deacc=self.deacc
-        )  # deacc=True removes accents
+        document.terms = [
+            token for token in self._tokenize(document.terms) if
+            self.min_len <= len(token) <= self.max_len and not token.startswith('_')
+        ]
 
 
 class Lemmatizer(PreprocessorComponent):
@@ -79,7 +88,6 @@ class Lemmatizer(PreprocessorComponent):
         self.allowed_postags = DEFAULT_ALLOWED_POSTAGS
         self.lemmatizer = spacy_udpipe.load("sk")
 
-    # @calculate_stats(name="Lemmatization")
     def process(self, document: WikiPage):
         doc = self.lemmatizer(" ".join(document.terms))
         document.terms = [
@@ -90,13 +98,15 @@ class Lemmatizer(PreprocessorComponent):
 
 
 class DocumentSaver(PreprocessorComponent):
-    def __init__(self, already_processed_path: str):
+    def __init__(self, already_processed_path: str, lock: multiprocessing.Lock):
         self.already_processed_path = already_processed_path
+        self.lock = lock
 
     def process(self, document: WikiPage):
-        pd.DataFrame([[document.doc_id, document.title, document.terms]]).to_csv(
-            self.already_processed_path, index=False, header=False, mode='a', encoding='utf-8'
-        )
+        with self.lock:
+            pd.DataFrame([[document.doc_id, document.title, document.terms]]).to_csv(
+                self.already_processed_path, index=False, header=False, mode='a', encoding='utf-8'
+            )
 
 
 class TextPreprocessor:
@@ -109,6 +119,7 @@ class TextPreprocessor:
         self.conf = conf
         if 'lemmatize' in component_names:
             spacy_udpipe.download("sk")
+        self.lock = multiprocessing.Manager().Lock()
 
     def init_components(self) -> dict[str, PreprocessorComponent]:
         components: dict[str, PreprocessorComponent] = {}
@@ -124,7 +135,7 @@ class TextPreprocessor:
             # after lemmatize we want to remove stop words again
             components['stopwords_cleaner'] = StopWordsRemover(self.conf.get('stop_words_path'))
         if 'document_saver' in self.component_names:
-            components['document_saver'] = DocumentSaver(self.already_processed_path)
+            components['document_saver'] = DocumentSaver(self.already_processed_path, self.lock)
         return components
 
     def _preprocess(self, documents: list[WikiPage], pbar_position=0):
@@ -132,18 +143,28 @@ class TextPreprocessor:
         components = self.init_components()
 
         for document in tqdm(documents, desc=f"{pbar_position}", position=pbar_position, leave=False):
-            if document.title in self.docs:
-                document.terms = ast.literal_eval(self.docs[document.title])
-            else:
-                for name, component in components.items():
-                    component.process(document)
+            for name, component in components.items():
+                component.process(document)
+            document.raw_text = None
+            # document.terms = None
         return documents
 
     def preprocess(self, documents: list[WikiPage], workers=4) -> list[WikiPage]:
+        already_parsed = set()
+        for document in tqdm(documents, desc="Reading already processed documents", position=0, leave=False):
+            if document.title in self.docs:
+                document.terms = ast.literal_eval(self.docs[document.title])
+                document.raw_text = None
+                already_parsed.add(document)
+        # self.docs = None
+        to_parse = list(set(documents) - already_parsed)
+        logger.info(f"Already parsed {len(already_parsed)} documents.")
+        logger.info(f"Need to parse {len(to_parse)} documents.")
         if workers == 1:
-            return self._preprocess(documents)
-
+            return self._preprocess(to_parse)
         preprocessed_documents = utils.generic_parallel_execution(
-            documents, self._preprocess, workers=workers, executor='process'
+            to_parse, self._preprocess, workers=workers, executor='process'
         )
-        return list(itertools.chain.from_iterable(preprocessed_documents))
+        preprocessed_documents = list(itertools.chain.from_iterable(preprocessed_documents))
+        preprocessed_documents.extend(already_parsed)
+        return preprocessed_documents

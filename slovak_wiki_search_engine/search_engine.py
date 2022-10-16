@@ -1,6 +1,9 @@
+import ast
 import logging
 from timeit import default_timer as timer
 from typing import Union
+
+import pandas as pd
 
 from arg_parser import QueryBooleanOperator
 from indexer import InvertedIndex
@@ -17,9 +20,10 @@ class SearchEngine:
         self.inverted_index = inverted_index
         self.conf = conf
         preprocessor_components: list = conf.get("preprocessor_components")
+        self.path_to_documents = conf.get("already_processed_path")
         if preprocessor_components and 'document_saver' in preprocessor_components:
             preprocessor_components.remove("document_saver")
-        self.text_preprocessor = TextPreprocessor(preprocessor_components, self.conf, load_docs=False)
+        self.text_preprocessor = TextPreprocessor(preprocessor_components, self.conf, load_docs=True)
         self.vectorizer = TfIdfVectorizer(self.inverted_index)
 
     def search(self, query: str,
@@ -61,6 +65,11 @@ class SearchEngine:
                     logger.warning(e)
 
         logger.info(f'Relevant documents count: {len(relevant_documents)}')
+
+        for doc in relevant_documents:
+            terms = self.text_preprocessor.docs.get(doc.title)
+            if terms:
+                doc.terms = ast.literal_eval(terms)
 
         query_doc.vector = self.vectorizer.vectorize_terms(query_doc.terms)
         # calculate cosine similarity between query_doc and relevant documents

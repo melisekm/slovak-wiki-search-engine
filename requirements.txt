@@ -1,6 +1,5 @@
 numpy
 tqdm
-gensim
 spacy-udpipe
 spacy
 pandas

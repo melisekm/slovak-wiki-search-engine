@@ -104,7 +104,7 @@ class WikiParser:
             return attr_grp.group(1)
         return ''
 
-    def parse_pages(self, pages: tuple[int, str], pbar_position=0):
+    def parse_pages(self, pages: tuple[str, int], pbar_position=0):
         parsed_pages = []
         infobox_types = defaultdict(list)
         for page, idx in tqdm(pages, desc=f"{pbar_position}", position=pbar_position):

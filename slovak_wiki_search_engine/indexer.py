@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class IndexRecord:
-    def __init__(self, term: str):
-        self.term = term
+    def __init__(self):
         self.document_frequency = 0
         self.corpus_frequency = 0
         self.documents: set[WikiPage] = set()
@@ -55,7 +54,7 @@ class InvertedIndex:
         for document in parsed_documents:
             for term in document.terms:
                 if term not in self._index:
-                    self._index[term] = IndexRecord(term)
+                    self._index[term] = IndexRecord()
                 self._index[term].add_document(document)
         self.documents_count = len(parsed_documents)
         logger.info(f"Index created. Total terms in index: {len(self._index)}")

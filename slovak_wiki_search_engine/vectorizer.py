@@ -17,6 +17,8 @@ class TfIdfVectorizer:
         logger.info(f"Vectorizing {len(documents)} documents")
         for document in tqdm(documents, desc="Vectorizing documents"):
             document.vector = self.vectorize_terms(document.terms)
+            document.raw_text = None
+            document.terms = None
         return documents
 
     def vectorize_terms(self, document: list[str]) -> list[float]:

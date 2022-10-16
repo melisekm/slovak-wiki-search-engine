@@ -153,6 +153,7 @@ def cosine_similarity(query: 'wiki_parser.WikiPage',
                 doc_token_vector_val = 0
             score += query.vector[token_id] * doc_token_vector_val
         score_map[doc] = score
+        doc.terms = None
     return sorted(score_map.items(), key=lambda x: x[1], reverse=True)
 
 
