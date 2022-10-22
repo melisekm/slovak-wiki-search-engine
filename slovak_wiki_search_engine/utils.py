@@ -7,6 +7,7 @@ from concurrent.futures import as_completed, ProcessPoolExecutor, ThreadPoolExec
 from os.path import exists
 from pathlib import Path
 from timeit import default_timer as timer
+from stemmer import stem
 
 import numpy as np
 import pandas as pd
@@ -139,22 +140,65 @@ def calculate_stats(name):
     return decorator
 
 
-def cosine_similarity(query: 'wiki_parser.WikiPage',
-                      relevant_docs: list['wiki_parser.WikiPage']) -> list[tuple['wiki_parser.WikiPage', float]]:
+def rank_documents(query: 'wiki_parser.WikiPage',
+                   relevant_docs: list['wiki_parser.WikiPage']) -> list[tuple['wiki_parser.WikiPage', float]]:
+    score_map = new_cosine_sim(query, relevant_docs)
+    score_map = increase_weights(score_map, query)
+
+    return sorted(score_map.items(), key=lambda x: x[1], reverse=True)
+
+
+def dot_product(query: 'wiki_parser.WikiPage', doc: 'wiki_parser.WikiPage') -> float:
+    score = 0.0
+    for token in query.terms:
+        token_id = query.terms.index(token)
+        try:
+            doc_token_id = doc.terms.index(token)
+            doc_token_vector_val = doc.vector[doc_token_id]
+        except ValueError:
+            doc_token_vector_val = 0
+        score += query.vector[token_id] * doc_token_vector_val
+    return score
+
+
+def increase_weights(score_map, query):
+    for doc, cos_sim_val in score_map.items():
+        for term in query.terms:
+            term = stem(term)
+            if term in " ".join(stem(x) for x in doc.title.split()):
+                score_map[doc] += 0.3
+                logger.info(f"Found term {term} in title {doc.title}. Increasing by 0.3")
+            if doc.infobox:
+                if any(term in [stem(y) for y in x.split()] for x in doc.infobox.properties.keys()):
+                    logger.info(f"Found term {term} in {doc.title} infobox keys. Increasing by 0.1")
+                    score_map[doc] += 0.1
+                if any(term in [stem(y) for y in x.split()] for x in doc.infobox.properties.values()):
+                    logger.info(f"Found term {term} in {doc.title} infobox values. Increasing by 0.15")
+                    score_map[doc] += 0.15
+    return score_map
+
+
+def create_query_doc_vector(doc: 'wiki_parser.WikiPage', query: 'wiki_parser.WikiPage') -> np.array:
+    query_vec = np.zeros(len(doc.terms))
+    for token_id, token in enumerate(query.terms):
+        try:
+            doc_token_id = doc.terms.index(token)
+            query_vec[doc_token_id] = doc.vector[doc_token_id]
+        except ValueError:
+            pass
+    return query_vec
+
+
+def new_cosine_sim(query: 'wiki_parser.WikiPage',
+                   relevant_docs: list['wiki_parser.WikiPage']) -> list[tuple['wiki_parser.WikiPage', float]]:
     score_map = {}
     for doc in relevant_docs:
-        score = 0.0
-        for token in query.terms:
-            token_id = query.terms.index(token)
-            try:
-                doc_token_id = doc.terms.index(token)
-                doc_token_vector_val = doc.vector[doc_token_id]
-            except ValueError:
-                doc_token_vector_val = 0
-            score += query.vector[token_id] * doc_token_vector_val
+        doc_vector = np.array(doc.vector)
+        query_doc_vector = create_query_doc_vector(doc, query)
+        score = np.dot(doc_vector, query_doc_vector) / (np.linalg.norm(query_doc_vector) * np.linalg.norm(doc_vector))
         score_map[doc] = score
-        doc.terms = None
-    return sorted(score_map.items(), key=lambda x: x[1], reverse=True)
+        # doc.terms = None
+    return score_map
 
 
 def format_results(results: list[tuple['wiki_parser.WikiPage', float]]):

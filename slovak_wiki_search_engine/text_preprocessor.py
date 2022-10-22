@@ -149,19 +149,22 @@ class TextPreprocessor:
             # document.terms = None
         return documents
 
-    def preprocess(self, documents: list[WikiPage], workers=4) -> list[WikiPage]:
+    def preprocess(self, documents: list[WikiPage], workers=4, query=False) -> list[WikiPage]:
+        if query:
+            return self._preprocess(documents)
         already_parsed = set()
         for document in tqdm(documents, desc="Reading already processed documents", position=0, leave=False):
             if document.title in self.docs:
                 document.terms = ast.literal_eval(self.docs[document.title])
                 document.raw_text = None
                 already_parsed.add(document)
-        # self.docs = None
+
         to_parse = list(set(documents) - already_parsed)
         logger.info(f"Already parsed {len(already_parsed)} documents.")
         logger.info(f"Need to parse {len(to_parse)} documents.")
-        if workers == 1:
-            return self._preprocess(to_parse)
+        if workers == 1 or len(to_parse) < 100:
+            return self._preprocess(to_parse) + list(already_parsed)
+
         preprocessed_documents = utils.generic_parallel_execution(
             to_parse, self._preprocess, workers=workers, executor='process'
         )

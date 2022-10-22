@@ -2,6 +2,8 @@ import logging
 import pickle
 from typing import Optional, Union
 
+from tqdm import tqdm
+
 import vectorizer
 from text_preprocessor import TextPreprocessor
 from wiki_parser import WikiPage, WikiParser
@@ -49,9 +51,8 @@ class InvertedIndex:
         return indexrecord
 
     def _create_index(self, parsed_documents: list[WikiPage]):
-        logger.info("Adding terms to inverted index...")
         self._index = {}
-        for document in parsed_documents:
+        for document in tqdm(parsed_documents, desc='Adding terms to inverted index'):
             for term in document.terms:
                 if term not in self._index:
                     self._index[term] = IndexRecord()

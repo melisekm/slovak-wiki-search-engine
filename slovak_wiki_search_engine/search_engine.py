@@ -3,12 +3,10 @@ import logging
 from timeit import default_timer as timer
 from typing import Union
 
-import pandas as pd
-
 from arg_parser import QueryBooleanOperator
 from indexer import InvertedIndex
 from text_preprocessor import TextPreprocessor
-from utils import cosine_similarity
+from utils import rank_documents
 from vectorizer import TfIdfVectorizer
 from wiki_parser import WikiPage
 
@@ -34,7 +32,7 @@ class SearchEngine:
 
         start = timer()
         query_doc = WikiPage(-1, None, query)
-        query_doc = self.text_preprocessor.preprocess([query_doc], workers=1)[0]
+        query_doc = self.text_preprocessor.preprocess([query_doc], query=True)[0]
 
 
         if boolean_operator == QueryBooleanOperator.AND:
@@ -73,7 +71,7 @@ class SearchEngine:
 
         query_doc.vector = self.vectorizer.vectorize_terms(query_doc.terms)
         # calculate cosine similarity between query_doc and relevant documents
-        relevant_documents = cosine_similarity(query_doc, relevant_documents)[:results_count]
+        relevant_documents = rank_documents(query_doc, relevant_documents)[:results_count]
         run_time = timer() - start
         logger.info(f'Relevant documents count after limit: {len(relevant_documents)}')
         logger.info(f'Search time: {run_time:.2f}s')
