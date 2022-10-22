@@ -197,7 +197,7 @@ def new_cosine_sim(query: 'wiki_parser.WikiPage',
         query_doc_vector = create_query_doc_vector(doc, query)
         score = np.dot(doc_vector, query_doc_vector) / (np.linalg.norm(query_doc_vector) * np.linalg.norm(doc_vector))
         score_map[doc] = score
-        # doc.terms = None
+        doc.terms = None
     return score_map
 
 
