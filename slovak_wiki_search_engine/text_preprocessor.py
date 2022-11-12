@@ -3,7 +3,6 @@ import itertools
 import logging
 import multiprocessing
 import re
-import sys
 from abc import ABC
 from typing import Union
 

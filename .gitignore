@@ -153,3 +153,5 @@ cython_debug/
 data/*
 !data/conf.json
 !data/SK_stopwords.txt
+**/part-*
+**/_SUCCESS
