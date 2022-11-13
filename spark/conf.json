@@ -1,18 +1,14 @@
 {
-  "data": {
-    "input_path": "sk_wikipedia_dump_small_100k.xml",
-    "output_path": "melisekm/sk_wikipedia_dump_small_100k_parsed"
-  },
   "spark": {
+    "spark.master": "spark://localhost:6066",
     "spark.executor.memory": "512m",
     "spark.driver.memory": "512m",
     "spark.cores.max": "8",
+    "spark.pyspark.virtualenv.bin.path": "melisekm_vinf/bin/virtualenv",
+    "spark.pyspark.virtualenv.requirements": "requirements.txt",
     "spark.executorEnv.PYTHONIOENCODING": "utf8",
     "spark.pyspark.virtualenv.enabled": true,
     "spark.pyspark.virtualenv.type": "native",
-    "spark.pyspark.virtualenv.requirements": "requirements.txt",
-    "spark.pyspark.virtualenv.bin.path": "melisekm_vinf/bin/virtualenv",
-    "spark.master": "spark://localhost:6066",
     "spark.app.name": "MelisekM_SK_WIKI_PARSER"
   },
   "partitions": 32,

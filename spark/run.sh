@@ -12,7 +12,6 @@ py_files=$3
 other_files=$4
 main_script=$5
 
-hadoop fs -copyFromLocal $input_path ./
 hadoop fs -mkdir -p $output_path
 cp spark-xml_2.12-0.15.0.jar $SPARK_HOME/jars
 

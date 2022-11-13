@@ -101,7 +101,6 @@ class TextPreprocessor:
         return components
 
     def preprocess(self, document):
-        print("Preprocessing document: ", document.title)
         for name, component in self.components.items():
             component.process(document)
         return document
