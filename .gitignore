@@ -155,3 +155,4 @@ data/*
 !data/SK_stopwords.txt
 **/part-*
 **/_SUCCESS
+**/melisekm_vinf

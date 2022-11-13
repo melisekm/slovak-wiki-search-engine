@@ -22,8 +22,8 @@ class WikiPage:
         self.raw_text = text
         self.infobox = infobox
         self.infobox_title = infobox.name if infobox else None
-        # self.terms: list[str] = []
-        # self.vector: list[float] = []
+        self.terms: list[str] = []
+        self.vector: list[float] = []
 
     def __str__(self):
         return f'WikiPage(title={self.title}, infobox={self.infobox_title})'
@@ -93,7 +93,6 @@ class WikiParser:
         return ''
 
     def parse_page(self, page):
-        # title = self._parse_attr(page, self.TITLE_PATTERN)
         title = page['title']
         if title and any(title.startswith(disallowed_page) for disallowed_page in self.DISALLOWED_PAGES):
             return None
@@ -107,7 +106,5 @@ class WikiParser:
         if not text:
             return WikiPage(title, '', '')
 
-        # text = page.get('revision', {}).get('text', {}).get('_VALUE', '')
-        # text = self._parse_attr(page, self.TEXT_PATTERN)
         infobox = self.parse_infobox(text)
         return WikiPage(title, text, infobox)

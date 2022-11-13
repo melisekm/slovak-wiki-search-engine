@@ -1,5 +1,2 @@
-numpy
-tqdm
 spacy-udpipe
-spacy
-pandas
+virtualenv
