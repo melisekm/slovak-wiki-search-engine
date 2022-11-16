@@ -1,0 +1,10 @@
+{
+  "stop_words_path": "SK_stopwords.txt",
+  "preprocessor_components": [
+    "normalize",
+    "tokenize",
+    "remove_stopwords",
+    "lemmatize",
+    "stop_words_cleaner"
+  ]
+}
