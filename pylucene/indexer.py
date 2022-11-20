@@ -7,6 +7,10 @@ from org.apache.lucene.analysis.core import WhitespaceAnalyzer
 from org.apache.lucene.index import IndexWriter, IndexWriterConfig
 from org.apache.lucene.document import Document, Field, TextField
 from org.apache.lucene.store import NIOFSDirectory
+from org.apache.lucene.analysis.miscellaneous import PerFieldAnalyzerWrapper
+from org.apache.lucene.analysis.cz import CzechAnalyzer
+from java.util import HashMap
+
 
 import pandas as pd
 from ast import literal_eval
@@ -14,10 +18,17 @@ from ast import literal_eval
 
 def main():
     store = NIOFSDirectory(Paths.get("skwiki_index"))
-    analyzer = WhitespaceAnalyzer()
+
+    analyzer_per_field = HashMap()
+    analyzer_per_field.put("terms", WhitespaceAnalyzer())
+    analyzer = PerFieldAnalyzerWrapper(CzechAnalyzer(), analyzer_per_field)
+
+
     config = IndexWriterConfig(analyzer)
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE)
     writer = IndexWriter(store, config)
+
+    start = timer()
 
     df = pd.read_csv("datapart.csv", encoding="utf-8")
     for index, row in tqdm(df.iterrows(), total=df.shape[0], desc="Indexing"):
@@ -28,7 +39,7 @@ def main():
             infobox_split = row["infobox"].split("\t")
             infobox_name = infobox_split[0]
             if len(infobox_split) < 2:
-                print("splIT FAILED", index)
+                print("SPLIT FAILED", index)
                 continue
             infobox_value = literal_eval(infobox_split[1])  # dict of infobox key value pairs
             doc.add(Field("infobox_name", infobox_name, TextField.TYPE_STORED))
@@ -37,7 +48,6 @@ def main():
                 doc.add(Field("infobox_value", value, TextField.TYPE_STORED))
 
         writer.addDocument(doc)
-    start = timer()
     writer.commit()
     writer.close()
     end = timer()
