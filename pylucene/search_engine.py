@@ -1,47 +1,54 @@
 import sys
+
 import lucene
 from java.nio.file import Paths
 from org.apache.lucene.index import DirectoryReader
+from org.apache.lucene.queryparser.classic import QueryParser
 from org.apache.lucene.search import IndexSearcher
 from org.apache.lucene.store import NIOFSDirectory
-from org.apache.lucene.queryparser.classic import QueryParser
-from org.apache.lucene.analysis.core import WhitespaceAnalyzer
-from org.apache.lucene.analysis.miscellaneous import PerFieldAnalyzerWrapper
-from java.util import HashMap
-from org.apache.lucene.analysis.cz import CzechAnalyzer
 
-from text_preprocessor import load
+from common import get_analyzer, get_config
+from text_preprocessor import TextPreprocessor, Tokenizer
 
 
+class PyLuceneSearchEngine:
+    def __init__(self, config_path):
+        self.conf = get_config(config_path)
+
+        with open(self.conf['stop_words_path'], encoding="UTF-8") as stopwords_file:
+            stopwords = [line.strip() for line in stopwords_file]
+        self.text_preprocessor = TextPreprocessor(self.conf['preprocessor_components'], stopwords)
+
+        store = NIOFSDirectory(Paths.get(self.conf['index_path']))
+        self.searcher = IndexSearcher(DirectoryReader.open(store))
+        self.boosts = self.conf.get('boosts', {})
+        self.analyzer = get_analyzer()
+        self.query_parser = QueryParser("<default field>", self.analyzer)
+        self.tokenizer = Tokenizer()
+
+    def search(self, user_query):
+        parsed_terms_query = self.text_preprocessor.preprocess(user_query)
+        query_string = ""
+
+        for term in self.tokenizer.process(user_query):
+            for key, value in self.boosts.items():
+                query_string += f'{key}:{term}^{value} '
 
 
-def search(user_query):
-    text_preprocessor = load()
-    directory = NIOFSDirectory(Paths.get("skwiki_index"))
-    searcher = IndexSearcher(DirectoryReader.open(directory))
+        for term in parsed_terms_query:
+            query_string += f"+terms:{term} "
 
-    # for terms field use whiespace analyzer
-    # for others use czech analyzer
-    analyzer_per_field = HashMap()
-    analyzer_per_field.put("terms", WhitespaceAnalyzer())
-    analyzer = PerFieldAnalyzerWrapper(CzechAnalyzer(), analyzer_per_field)
+        query = self.query_parser.parse(query_string)
 
-    parsed_terms_query = text_preprocessor.preprocess(user_query)
+        score_docs = self.searcher.search(query, 10).scoreDocs
+        print(f"{len(score_docs)} total matching documents.")
 
-    
-    queryParser = QueryParser("<default field>", analyzer)
-    special = f'title:"{user_query}"^5.0 infobox_name:"{user_query}"^3.5 infobox_key:"{user_query}"^2.5 ' \
-              f'infobox_value:"{user_query}"^1.5 terms:"{parsed_terms_query}"'
-    query = queryParser.parse(special)
-
-
-    scoreDocs = searcher.search(query, 10).scoreDocs
-    print("%s total matching documents." % len(scoreDocs))
-    for scoreDoc in reversed(scoreDocs):
-        doc = searcher.doc(scoreDoc.doc)
-        print('title:', doc.get("title"), " score: ", scoreDoc.score)
+        for scoreDoc in reversed(score_docs):
+            doc = self.searcher.doc(scoreDoc.doc)
+            print('title:', doc.get("title"), " score: ", scoreDoc.score)
 
 
 if __name__ == "__main__":
     lucene.initVM(vmargs=['-Djava.awt.headless=true'])
-    search(" ".join(sys.argv[1:]))
+    search_engine = PyLuceneSearchEngine("conf.json")
+    search_engine.search(" ".join(sys.argv[1:]))

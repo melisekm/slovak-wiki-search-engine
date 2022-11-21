@@ -1,4 +1,5 @@
 {
+  "wiki_parts_path": "wiki_parts",
   "stop_words_path": "SK_stopwords.txt",
   "preprocessor_components": [
     "normalize",
@@ -6,5 +7,12 @@
     "remove_stopwords",
     "lemmatize",
     "stop_words_cleaner"
-  ]
+  ],
+  "boosts": {
+    "title": 5.0,
+    "infobox_name": 3.5,
+    "infobox_key": 2.5,
+    "infobox_value": 1.5
+  },
+  "index_path": "skwiki_pylucene_index"
 }

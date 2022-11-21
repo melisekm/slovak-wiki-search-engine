@@ -1,4 +1,3 @@
-import json
 import re
 from abc import ABC
 
@@ -78,9 +77,9 @@ class Lemmatizer(PreprocessorComponent):
 
 
 class TextPreprocessor:
-    def __init__(self, preprocessor_components, stopwords):
-        self.component_names = preprocessor_components
+    def __init__(self, component_names, stopwords):
         self.stopwords = stopwords
+        self.component_names = component_names
         if 'lemmatize' in self.component_names:
             spacy_udpipe.download("sk")
         self.components = self.init_components()
@@ -105,12 +104,4 @@ class TextPreprocessor:
         for name, component in self.components.items():
             query = component.process(query)
             print(f"Running {name}..." + f" Result: {query}")
-        return " ".join(query)
-
-
-def load():
-    with open('conf.json', 'r') as conf_file:
-        conf = json.load(conf_file)
-    with open(conf["stop_words_path"], encoding="UTF-8") as stopwords_file:
-        stop_words_list = [line.strip() for line in stopwords_file]
-    return TextPreprocessor(conf.get("preprocessor_components"), stop_words_list)
+        return query
