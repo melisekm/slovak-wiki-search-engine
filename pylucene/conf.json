@@ -1,6 +1,7 @@
 {
   "wiki_parts_path": "wiki_parts",
   "stop_words_path": "SK_stopwords.txt",
+  "wiki_mapping_path": "wiki_mapping.json",
   "preprocessor_components": [
     "normalize",
     "tokenize",
