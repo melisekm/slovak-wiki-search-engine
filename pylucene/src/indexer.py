@@ -67,5 +67,5 @@ class PyLuceneIndexer:
 
 if __name__ == '__main__':
     lucene.initVM(vmargs=['-Djava.awt.headless=true'])
-    indexer = PyLuceneIndexer("conf.json")
+    indexer = PyLuceneIndexer("data/conf.json")
     indexer.create_index()

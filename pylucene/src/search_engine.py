@@ -135,7 +135,7 @@ class PyLuceneSearchEngine:
 
 if __name__ == "__main__":
     lucene.initVM(vmargs=["-Djava.awt.headless=true"])
-    search_engine = PyLuceneSearchEngine("conf.json")
+    search_engine = PyLuceneSearchEngine("data/conf.json")
     arg_parser = arg_parser.ArgParser()
     while True:
         args = input("Enter the program arguments. [Q] to quit: ")
