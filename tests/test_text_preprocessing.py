@@ -1,7 +1,9 @@
+import os
+
+from slovak_wiki_search_engine import utils
 from tests import DEFAULT_TEST_CONF
 import unittest
 
-import utils
 from text_preprocessor import Normalizer, StopWordsRemover, Tokenizer, Lemmatizer, TextPreprocessor
 from wiki_parser import WikiPage, WikiParser
 
@@ -63,7 +65,7 @@ class TestTextPreprocessing(unittest.TestCase):
             preprocessor_components.remove("document_saver")
 
         parsed_documents = [document]
-        text_preprocessor = TextPreprocessor(preprocessor_components, conf)
+        text_preprocessor = TextPreprocessor(preprocessor_components, conf, load_docs=False)
         preprocessed_documents = text_preprocessor.preprocess(parsed_documents)
         self.assertEqual(preprocessed_documents[0].terms, [
             'nezvyčajný', 'kŕdlo', 'šťastný', 'figliarsky', 'vták', 'učiť', 'kótovaný', 'váha', 'mĺkvy', 'kôň',
@@ -73,6 +75,8 @@ class TestTextPreprocessing(unittest.TestCase):
     def test_parser_and_preprocess(self):
         wikipedia_data_path = 'data/sk_wikipedia_dump_small_100k.xml'
         workers = 6
+        if not os.path.exists(wikipedia_data_path):
+            self.skipTest('sk_wikipedia_dump_path does not exist. Skipping test.')
 
         wiki_parser = WikiParser()
         parsed_documents = wiki_parser.parse_wiki(wikipedia_data_path, workers)

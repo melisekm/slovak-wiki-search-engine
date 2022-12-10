@@ -1,3 +1,4 @@
+import os
 import unittest
 import tests
 import utils
@@ -11,6 +12,8 @@ class TestWikiParser(unittest.TestCase):
     def test_counts(self):
         wiki_parser = WikiParser()
         wikipedia_data_path = 'data/sk_wikipedia_dump_small_1m.xml'
+        if not os.path.exists(wikipedia_data_path):
+            self.skipTest('sk_wikipedia_dump_path does not exist. Skipping test.')
         workers = 4
         parsed_documents = wiki_parser.parse_wiki(wikipedia_data_path, workers)
         self.assertEqual(wiki_parser.stats['pages'], 14109)

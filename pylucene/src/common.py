@@ -37,6 +37,7 @@ def create_wiki_mapping():
     with open("wiki_mapping.json", "w") as f:
         json.dump(wiki_mapping, f)
 
+
 def read_infobox_from_infobox_string(infobox_string):
     res = {}
     infobox_split = infobox_string.split("\t")
@@ -53,6 +54,7 @@ def read_infobox_from_infobox_string(infobox_string):
     # dict of infobox key value pairs
     res['infobox_dict'] = literal_eval(infobox_split[infobox_value_index])
     return res
+
 
 if __name__ == '__main__':
     create_wiki_mapping()

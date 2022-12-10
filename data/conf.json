@@ -1,6 +1,6 @@
 {
-  "inverted_index_path": "data/inverted_index.pickle",
-  "sk_wikipedia_dump_path": "data/sk_wikipedia_dump_full.xml",
+  "inverted_index_path": "data/inverted_index_1m.pickle",
+  "sk_wikipedia_dump_path": "data/sk_wikipedia_dump_small_1m.xml",
   "stop_words_path": "data/SK_stopwords.txt",
   "already_processed_path": "data/already_parsed.csv",
   "preprocessor_components": [

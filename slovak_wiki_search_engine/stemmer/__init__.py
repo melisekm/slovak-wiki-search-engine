@@ -183,15 +183,3 @@ def _palatalise(word):
     if word[-3:] in ("šte", "šti", "ští"):
         return word[:-3] + "sk"
     return word[:-1]
-
-
-def main():
-    if len(sys.argv) != 2 or sys.argv[1] not in ("light", "aggressive"):
-        sys.exit("usage: {} light|aggressive".format(sys.argv[0]))
-    aggressive = sys.argv[1] == "aggressive"
-    for line in sys.stdin:
-        print(*[stem(word, aggressive=aggressive)
-                for word in line.split()])
-
-if __name__ == '__main__':
-    main()
