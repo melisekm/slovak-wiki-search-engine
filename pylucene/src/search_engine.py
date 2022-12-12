@@ -114,7 +114,7 @@ class PyLuceneSearchEngine:
             else:
                 print("Sorry this Article doesn't have a infobox.")
 
-    def search(self, user_query):
+    def search(self, user_query, results_count):
         parsed_terms_query = self.text_preprocessor.preprocess(user_query)
         query_string = ""
 
@@ -127,19 +127,37 @@ class PyLuceneSearchEngine:
 
         query = self.query_parser.parse(query_string)
 
-        score_docs = self.searcher.search(query, 10).scoreDocs
+        score_docs = self.searcher.search(query, results_count).scoreDocs
         print(f"{len(score_docs)} total matching documents.")
 
         self.show_results(score_docs)
 
+def calculate_metrics(retrieved, relevant):
+    retrieved = set(retrieved)
+    relevant = set(relevant)
+    precision = len(retrieved.intersection(relevant)) / len(retrieved)
+    recall = len(retrieved.intersection(relevant)) / len(relevant)
+    f1 = 2 * precision * recall / (precision + recall)
+    return precision, recall, f1
+
+def calculate_map(retrieved, relevant):
+    ap = 0
+    for idx, doc in enumerate(retrieved):
+        if doc in relevant:
+            ap += calculate_metrics(retrieved[:idx + 1], relevant)[0]
+    return ap / len(relevant)
+
+def calculate_precision_at_k(retrieved, relevant, k):
+    return calculate_metrics(retrieved[:k], relevant)[0]
+
 
 if __name__ == "__main__":
     lucene.initVM(vmargs=["-Djava.awt.headless=true"])
-    search_engine = PyLuceneSearchEngine("data/conf.json")
+    search_engine = PyLuceneSearchEngine("conf.json")
     arg_parser = arg_parser.ArgParser()
     while True:
         args = input("Enter the program arguments. [Q] to quit: ")
         if args.lower() == "q":
             break
         params = arg_parser.parse(args)
-        search_engine.search(params["query"])
+        search_engine.search(params["query"], params['results_count'])
