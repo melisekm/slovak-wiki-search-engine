@@ -1,0 +1,2 @@
+- Run this in docker and see src/indexer.py and common.py
+- data/wiki_parts should contain part*.csv files and 4 columns, `title`, `raw_text`, `infobox`, `terms`.

@@ -1,6 +1,3 @@
-#! /usr/bin/env python
-# -*- coding: utf8 -*-
-
 ''' Slovak stemmer
 https://github.com/mrshu/stemm-sk
 Adapted from the Czech stemmer with the following copyright
